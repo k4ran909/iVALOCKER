@@ -1,13 +1,13 @@
 
-![image](https://github.com/k4ran909/VALORANT-Instalocker/assets/70258998/000c238b-c72e-4682-abc6-90fca7d2cbda)
+![image](https://github.com/k4ran909/iVALOCKER/blob/main/web/assets/readme.png?raw=true)
 
 # VALORANT Instalocker
 A VALORANT Instalocker with a clean GUI
 
 <br>
 
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/k4ran909/VALORANT-Instalocker/total?style=flat-square&label=Total%20Downloads&color=brown)
-![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/k4ran909/VALORANT-Instalocker/latest/total?style=flat-square&label=People%20using%20the%20latest%20release&color=brown)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/k4ran909/iVALOCKER/total?style=flat-square&label=Total%20Downloads&color=brown)
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/k4ran909/iVALOCKER/latest/total?style=flat-square&label=People%20actively%20using%20the%20latest%20release&color=brown)
 
 ## 🎡 Features
 
@@ -23,7 +23,7 @@ A VALORANT Instalocker with a clean GUI
 <br>
 
 ## 📩 Installation
-[Link]: https://github.com/k4ran909/VALORANT-Instalocker/releases/latest 'Latest Release'
+[Link]: https://github.com/k4ran909/iVALOCKER/releases/latest 'Latest Release'
 [Button Icon]: https://img.shields.io/badge/Releases-EF2D5E?style=for-the-badge&logoColor=white&logo=DocuSign
 [![Button Icon]][Link]
 
@@ -61,13 +61,13 @@ Even if Riot happens to somehow detect this, you will only recieve a 7 day ban f
 
 - For your convinience, simply use `install.bat` and then `build.bat` after downloading the repository for a smooth, automated process! After that, you're done. If you insist otherwise, follow ahead.
 
-- ~~Use a python version lower than 3.12 or you'll end up with [this error](https://stackoverflow.com/questions/77232001/python-eel-module-unable-to-use-import-bottle-ext-websocket-as-wbs-modulenotfoun). You also cannot use python 3.10.0 because there is a [pyinstaller issue](https://github.com/pyinstaller/pyinstaller/issues/6301) with it. I used 3.10.10.~~ This issue is probably fixed now. You should be able to run it with latest versions of python without the bottle.py fix. It will still exist just in case.
+- Use a python version lower than 3.12 or you'll end up with [this error](https://stackoverflow.com/questions/77232001/python-eel-module-unable-to-use-import-bottle-ext-websocket-as-wbs-modulenotfoun). You also cannot use python 3.10.0 because there is a [pyinstaller issue](https://github.com/pyinstaller/pyinstaller/issues/6301) with it. I used 3.10.10.
 
 - Run `python -m pip install -r requirements.txt`
 
 - Building a distributable:
     <br>
-    - Run the `replace_bottle.py` code in install_and_build. This step counters an issue with pyinstaller. You can also do this manually by going to your python's directory / Libs / site-packages and then replacing bottle.py with the latest variant. [(See this issue)](https://github.com/k4ran909/VALORANT-Instalocker/issues/3)
+    - Run the `replace_bottle.py` code in install_and_build. This step counters an issue with pyinstaller. You can also do this manually by going to your python's directory / Libs / site-packages and then replacing bottle.py with the latest variant.
     - Run `python -m eel main.py web --onefile --noconsole --icon=./web/favicon.ico --name="VALORANT Instalocker"`
     - A distributable should appear in ./dist
 
@@ -103,12 +103,10 @@ Even if Riot happens to somehow detect this, you will only recieve a 7 day ban f
 
 ## 🤷‍♀️ Support / Feedback:
 
-- You can hit me up on Discord [@lternatively](https://discord.com/users/735322421862727760)
-
-- If your issue is "cannot initialize a valclient", follow this method to report it https://github.com/k4ran909/VALORANT-Instalocker/issues/12
+- If your issue is "cannot initialize a valclient", follow this method to report it https://github.com/k4ran909/iVALOCKER/issues
 
 - For other issues, use the `--debug` parameter to log everything that happens when you try to instalock then make an issue:
-  [Method 1](https://i.imgur.com/InEbwdz.mp4) [Method 2](https://i.imgur.com/R5ElrrP.png) <br>
+  [Method 1](https://imgur.com/gallery/ivalocker-v-zTkF6ad) [Method 2](https://imgur.com/gallery/valocker-photo-Y0YrXDD) <br>
   
 - Sometimes the instalocker waits for a few seconds after the loading screen to instalock, this is because it scans for the pre-game screen every 3 seconds. You can change the loop delay in the code for yourself.
 
