@@ -1,0 +1,6 @@
+.venv
+venv
+VALORANT Instalocker.spec
+build
+dist
+*.pyc
