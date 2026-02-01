@@ -4,3 +4,5 @@ VALORANT Instalocker.spec
 build
 dist
 *.pyc
+*.log
+*.spec

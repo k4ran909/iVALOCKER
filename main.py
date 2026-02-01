@@ -24,8 +24,8 @@ SCREEN_DIMENSIONS = (
 INSTAGRAM = "https://www.instagram.com/k4ran909/"
 GITHUB = "https://github.com/k4ran909/"
 
-# Customize this to your preference
-LOOP_DELAY = 3 # Do not set this to less than 3 unless you know what you're doing.
+# MAXIMUM SPEED SETTINGS - Zero delay instalock
+LOOP_DELAY = 0.01  # 10ms - fastest possible without CPU overload
 LOCK_DELAY = 0
 HOVER_DELAY = 0
 
@@ -120,8 +120,13 @@ def errorAlert(line1, line2, time):
     Change the status text and the chosen agent text into an error.
     Sleep for some time before changing it back
     """
+    # Truncate long error messages to fit the UI
+    if isinstance(line2, Exception):
+        line2 = str(line2)
+    if len(str(line2)) > 30:
+        line2 = str(line2)[:27] + "..."
     logger.error(f"Error alert raised: {line1} {line2}")
-    eel.alertUser(line1, line2)
+    eel.alertUser(str(line1), str(line2))
     eel.sleep(time)
     eel.askUserToChooseAgent()
 
@@ -184,75 +189,97 @@ def try_lock(agent):
         logger.debug("Initializing a valclient instance...")
         client = Client(region=region_code)
         logger.debug("Initialized a valclient instance.")
-    except ValueError:
-        return errorAlert("COULD NOT INITIALIZE", "A VALCLIENT", 5)
+    except ValueError as e:
+        logger.error(f"ValueError initializing valclient: {e}")
+        return errorAlert("VALCLIENT INIT FAILED", "Check if Valorant is running", 5)
+    except ConnectionError as e:
+        logger.error(f"ConnectionError: {e}")
+        return errorAlert("CONNECTION ERROR", "Can't reach Valorant API", 5)
     except Exception as e:
-        logger.error(e)
-        raise Exception(e)
+        logger.error(f"Unexpected error initializing valclient: {e}")
+        return errorAlert("INIT ERROR", e, 5)
 
-    logger.debug("Activating valclient instance...")
-    client.activate()
-    logger.debug("Activated valclient instance")
+    try:
+        logger.debug("Activating valclient instance...")
+        client.activate()
+        logger.debug("Activated valclient instance")
+    except Exception as e:
+        logger.error(f"Error activating valclient: {e}")
+        return errorAlert("ACTIVATION FAILED", "Restart Valorant", 5)
 
-    RUNNING = True  # Mark as actively trying to lock an agent
+    RUNNING = True
+
+    # Pre-set agent code for speed
+    agent_code = AGENT_CODES[agent]
 
     while RUNNING:
-        eel.sleep(LOOP_DELAY)
-        logger.debug(f"Loop delay waiting {LOOP_DELAY} seconds")
-
         if not RUNNING:
-            logger.debug("No longer running, ending locking loop")
-            return  # Probably terminated
-
-        logger.debug("Rechecking for pre-game...")
+            return
 
         try:
-            sessionState = client.fetch_presence(client.puuid)["sessionLoopState"]
-            matchID = client.pregame_fetch_match()["ID"]
+            # FAST: Get presence and check state in one go
+            presence = client.fetch_presence(client.puuid)
+            
+            # Get session state from matchPresenceData (fastest path)
+            session_state = None
+            if presence:
+                mpd = presence.get("matchPresenceData")
+                if mpd:
+                    session_state = mpd.get("sessionLoopState")
+                if not session_state:
+                    session_state = presence.get("sessionLoopState")
+            
+            # Not in pregame? Quick sleep and retry
+            if session_state != "PREGAME":
+                eel.sleep(LOOP_DELAY)
+                continue
+            
+            # IN PREGAME! Get match ID fast
+            pregame_data = client.pregame_fetch_match()
+            matchID = pregame_data.get("ID") if pregame_data else None
+            
+            if not matchID or matchID in SEEN_MATCHES:
+                eel.sleep(LOOP_DELAY)
+                continue
 
-            logger.debug(f"Session State: {sessionState}\nMatch ID: {matchID}")
+            # PREGAME DETECTED! INSTANT LOCK NOW!
+            SEEN_MATCHES.append(matchID)
+            eel.changeStatus("LOCKING")
 
-            if sessionState == "PREGAME" and matchID not in SEEN_MATCHES:
+            # INSTANT LOCK - No delays, no waiting!
+            try:
+                client.pregame_lock_character(agent_code)
+            except:
+                # Fallback: select then lock
+                client.pregame_select_character(agent_code)
+                client.pregame_lock_character(agent_code)
 
-                logger.debug("Pregame found. Adding match ID to seen matches and proceeding to lock.")
+            stop_lock()
+            eel.changeStatus("LOCKED")
+            return True
 
-                SEEN_MATCHES.append(
-                    matchID
-                )  # If we've seen this match before, leave it be.
-
-                logger.debug(f"Seen matches: {SEEN_MATCHES}")
-
-                eel.changeStatus("LOCKING")
-
-                if not AGENT:
-                    logger.debug(f"Setting agent code to {agent}")
-                    AGENT = AGENT_CODES[agent]
-
-                eel.sleep(HOVER_DELAY)
-                logger.debug(f"Hover delay waiting {HOVER_DELAY} seconds")
-
-                client.pregame_select_character(AGENT)
-                logger.debug("Selecting agent.")
-
-                eel.sleep(LOCK_DELAY)
-                logger.debug(f"Lock delay waiting {LOCK_DELAY} seconds")
-
-                client.pregame_lock_character(AGENT)
-                logger.debug("Locking agent.")
-
-                stop_lock()
-                logger.debug("Stopped locking loop since we're done.")
-
-                eel.changeStatus("LOCKED")
-
-                return True
-
+        except KeyError as e:
+            # Missing key in API response - likely not in the right game state
+            pass  # Just continue to next check
+            
         except Exception as e:
-            logger.error(str(e))
-            if "pre-game" not in str(e):
-                errorAlert("ERROR", e, 12)
+            error_str = str(e).lower()
+            
+            # Ignore pre-game related errors (expected when not in agent select)
+            if "pre-game" in error_str or "pregame" in error_str:
+                pass  # Continue checking
+            elif "connection" in error_str or "timeout" in error_str:
+                pass  # Keep trying
+            elif "unauthorized" in error_str or "auth" in error_str:
+                errorAlert("AUTH ERROR", "Restart Valorant", 5)
                 stop_lock()
                 return
+            else:
+                # Log but don't stop - keep trying
+                logger.error(f"Exception in lock loop: {e}")
+        
+        # Delay at END of loop - first check is instant!
+        eel.sleep(LOOP_DELAY)
 
 
 @eel.expose

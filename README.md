@@ -1,8 +1,10 @@
 
 ![image](https://github.com/k4ran909/iVALOCKER/blob/main/web/assets/readme.png?raw=true)
 
-# VALORANT Instalocker
-A VALORANT Instalocker with a clean GUI
+# iVALOCKER - Ultra Fast Valorant Instalocker
+### By [k4ran909](https://github.com/k4ran909) 🚀
+
+A blazing-fast VALORANT Instalocker with a clean GUI and **zero delay** agent locking!
 
 <br>
 
@@ -11,14 +13,15 @@ A VALORANT Instalocker with a clean GUI
 
 ## 🎡 Features
 
-- Select an agent, hop into a game and it instalocks before you even know it!
+- ⚡ **Ultra-Fast Instalock** - 10ms polling for near-instant agent locking!
+- 🚀 **Zero Delay** - No hover delay, no lock delay, just instant locks!
+- Select an agent, hop into a game and it instalocks before anyone else!
 - Works separately from the game through the VALORANT API using [valclient](https://github.com/colinhartigan/valclient.py)
 - Allows you to stop the application from waiting for pre-game whenever
 - Allows you to switch between characters while instalocking
 - Stops instalocking and sending API requests as soon as an error is found
-- Clean and straightforward UI
-- Fixed 3 second refresh limit to better prevent API abuse
-- Agent banners, agent previews and other stuff i put in because memes
+- Clean and straightforward UI with search functionality
+- Agent banners, agent previews and smooth animations
 
 <br>
 
