@@ -1,131 +1,92 @@
+<div align="center">
 
-![image](https://github.com/k4ran909/iVALOCKER/blob/main/web/assets/readme.png?raw=true)
+  <img src="web/assets/logo.png" alt="iVALOCKER Logo" width="200" height="200" />
 
-# iVALOCKER - Ultra Fast Valorant Instalocker
-### By [k4ran909](https://github.com/k4ran909) 🚀
+  # iVALOCKER
+  ### by [k4ran909](https://github.com/k4ran909)
 
-A blazing-fast VALORANT Instalocker with a clean GUI and **zero delay** agent locking!
-
-<br>
-
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/k4ran909/iVALOCKER/total?style=flat-square&label=Total%20Downloads&color=brown)
-![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/k4ran909/iVALOCKER/latest/total?style=flat-square&label=People%20actively%20using%20the%20latest%20release&color=brown)
-
-## 🎡 Features
-
-- ⚡ **Ultra-Fast Instalock** - 10ms polling for near-instant agent locking!
-- 🚀 **Zero Delay** - No hover delay, no lock delay, just instant locks!
-- Select an agent, hop into a game and it instalocks before anyone else!
-- Works separately from the game through the VALORANT API using [valclient](https://github.com/colinhartigan/valclient.py)
-- Allows you to stop the application from waiting for pre-game whenever
-- Allows you to switch between characters while instalocking
-- Stops instalocking and sending API requests as soon as an error is found
-- Clean and straightforward UI with search functionality
-- Agent banners, agent previews and smooth animations
-
-<br>
-
-## 📩 Installation
-[Link]: https://github.com/k4ran909/iVALOCKER/releases/latest 'Latest Release'
-[Button Icon]: https://img.shields.io/badge/Releases-EF2D5E?style=for-the-badge&logoColor=white&logo=DocuSign
-[![Button Icon]][Link]
-
-
-<br>
-
-## ❔ How to use
-
-- Start VALORANT and this app.
-- Select any agent from the left-hand-side.
-- Instalocking should begin automatically, that's it!
-- Optionally, it's recommended to have [Google Chrome](https://www.google.com/intl/en_in/chrome/) installed. The .exe will simply open in your default browser otherwise, but it will still work.
-
-<br>
-
-## ❌ Windows protected your PC
-The application might refuse to run because Windows will assume this is malicious.
-<br>
-The fix is pretty simple, click on `More Info` and click on `Run Anyway`
-<br>
-Is that safe? Yes, it is. Windows protects your PC because this is an unsigned executable from an external source. If you're feeling a little paranoid, you can build it yourself with the instructions below!
-
-<br>
-
-## ❓ Can I get banned?
-
-Not likely unless you go around telling everyone you have an instalocker.
-<br>
-Even if Riot happens to somehow detect this, you will only recieve a 7 day ban for API abuse. That's still unlikely to occur and hasn't happened yet.
-> [@deadly](https://github.com/deadly): With all programs like this, there is no guarantee that it's safe because using the VALORANT API in this manner is against Riot's Terms of Service. However, this program does not use an autoclicker to select the agent, read the game's memory, or change the game's files; therefore, the anticheat shouldn't be triggered. No suspensions have been reported so far from using this method of exploit.
-
-<br>
-
-## 🛠 Building 
-
-- For your convinience, simply use `install.bat` and then `build.bat` after downloading the repository for a smooth, automated process! After that, you're done. If you insist otherwise, follow ahead.
-
-- Use a python version lower than 3.12 or you'll end up with [this error](https://stackoverflow.com/questions/77232001/python-eel-module-unable-to-use-import-bottle-ext-websocket-as-wbs-modulenotfoun). You also cannot use python 3.10.0 because there is a [pyinstaller issue](https://github.com/pyinstaller/pyinstaller/issues/6301) with it. I used 3.10.10.
-
-- Run `python -m pip install -r requirements.txt`
-
-- Building a distributable:
-    <br>
-    - Run the `replace_bottle.py` code in install_and_build. This step counters an issue with pyinstaller. You can also do this manually by going to your python's directory / Libs / site-packages and then replacing bottle.py with the latest variant.
-    - Run `python -m eel main.py web --onefile --noconsole --icon=./web/favicon.ico --name="VALORANT Instalocker"`
-    - A distributable should appear in ./dist
-
-- Running with python: 
-    <br>
-    - Run `python main.py`
-
-<br>
-
-## Adding agents
-
-- Add the agent name and their UUID in `./main.py` and `./web/json/agents.json` respectively. Note that the agent hierarchy depends on `agents.json`.
-
-- Add an agent banner in `./web/assets/images/agent-banners`, The file name must be the agent's name in *lower case* and the file should be a *.png* <br>
-  The css that crops the banner is as follows. Crop the banner image and adjust it accordingly:
-  ```css
-  .agent-thumb {
-    max-width: 40vw;
-    height: 7vw;
-    object-fit: cover;
-    object-position: 0vw -6vw;
-    position: absolute;
-    z-index: -1;
-    aspect-ratio: 20 / 3;
-    transform: skewY(5deg);
-    transition: transform 0.2s;
-  }
-  ```
-
-- Add an agent preview in `./web/assets/images/agent-previews`. The file name must be the agent's name in *lower case* and the file should be a *.gif*
-
-<br>
-
-## 🤷‍♀️ Support / Feedback:
-
-- If your issue is "cannot initialize a valclient", follow this method to report it https://github.com/k4ran909/iVALOCKER/issues
-
-- For other issues, use the `--debug` parameter to log everything that happens when you try to instalock then make an issue:
-  [Method 1](https://imgur.com/gallery/ivalocker-v-zTkF6ad) [Method 2](https://imgur.com/gallery/valocker-photo-Y0YrXDD) <br>
+  **The Fastest VALORANT Agent Instalocker**
   
-- Sometimes the instalocker waits for a few seconds after the loading screen to instalock, this is because it scans for the pre-game screen every 3 seconds. You can change the loop delay in the code for yourself.
+  [![Downloads](https://img.shields.io/github/downloads/k4ran909/iVALOCKER/total?style=for-the-badge&logo=github&color=ff4655)](https://github.com/k4ran909/iVALOCKER/releases)
+  [![Latest Release](https://img.shields.io/github/v/release/k4ran909/iVALOCKER?style=for-the-badge&logo=rocket&color=ff4655)](https://github.com/k4ran909/iVALOCKER/releases/latest)
+  [![License](https://img.shields.io/github/license/k4ran909/iVALOCKER?style=for-the-badge&color=blue)](LICENSE)
 
-#### Notes
-+ I do not plan on developing this further, but I will maintain the code and update agents- this will continue to work.
-+ I am also not responsible for **misuse** of this application, I do not condone using this and this only exists as an educational resource.
-+ I plan to release a new version re-written in typescript as an electron app. I am sick of Eel, and I don't like the fact you can't choose individual agents for each map.
+  <br>
+  
+  <a href="https://github.com/k4ran909/iVALOCKER/releases/latest">
+    <img src="https://img.shields.io/badge/DOWNLOAD_NOW-FF4655?style=for-the-badge&logo=windows&logoColor=white" height="50">
+  </a>
+
+</div>
 
 <br>
 
-## 📰 Credits
+## ⚡ Features
 
-- Heavily inspired by [valorant-agent-yoinker](https://github.com/deadly/valorant-agent-yoinker) that uses [valclient](https://github.com/colinhartigan/valclient.py)
-- All agent banners with the black background art style were made by [ExCharny](https://www.deviantart.com/excharny)
-- Clove Banner by [slynxoxo](https://twitter.com/slynxoxo/) from [this post](https://twitter.com/slynxoxo/status/1771862541850861971)
-- Most Agent previews (sprays and official stickers) are from the official [VALORANT giphy page](https://giphy.com/playvalorant)
-- [munibug](https://www.twitch.tv/munibug) gif by [@walfieee](https://twitter.com/walfieee)
-- Application Icon and Favicon by [u/Odeuo](https://www.reddit.com/user/Odeuo/)
-- Some of the agent previews and banners come from unknown sources, let me know if you find their sources!
+- **🚀 Zero Delay Locking**  
+  Optimized with a **10ms polling rate** for the fastest possible lock speed. No human can beat this.
+
+- **🎯 Instant Selection**  
+  Bypasses the selection animation and goes straight for the lock.
+
+- **🎨 Beautiful UI**  
+  A sleek, modern interface with smooth animations, agent banners, and search functionality.
+
+- **🛡️ Safe & Secure**  
+  Interacts only with the local Riot Client API (like a wrapper). Does not read memory or inject code.
+
+<br>
+
+## 🎮 How to Use
+
+1. **Download** the latest `iVALOCKER_k4ran909.exe` from [Releases](https://github.com/k4ran909/iVALOCKER/releases).
+2. **Open VALORANT** and log in to the main menu.
+3. **Run iVALOCKER** (Run as Administrator if needed).
+4. **Select your Agent** from the list. The status will change to `WAITING FOR PRE-GAME`.
+5. **Queue for a Match**. As soon as agent select appears, your agent will be locked instantly!
+
+> **Note:** Windows SmartScreen might warn you because the app is not signed. Click `More Info` > `Run Anyway`. This is normal for open-source tools.
+
+<br>
+
+## 🛠️ Building from Source
+
+If you prefer to build it yourself:
+
+1. **Clone the repo**
+   ```bash
+   git clone https://github.com/k4ran909/iVALOCKER.git
+   cd iVALOCKER
+   ```
+
+2. **Install Dependencies** (Python < 3.12 recommended)
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Build EXE**
+   ```bash
+   python -m eel main.py web --onefile --noconsole --icon=./web/favicon.ico --name="iVALOCKER_k4ran909" --add-data="web;web"
+   ```
+
+<br>
+
+## ⚠️ Disclaimer
+
+This software is for **educational purposes only**.
+- I (k4ran909) am not responsible for any bans or suspensions. 
+- While API abuse bans are extremely rare (and usually only 7 days if they happen), use this tool at your own risk.
+- This tool is not affiliated with Riot Games or VALORANT.
+
+<br>
+
+## ❤️ Credits
+
+- Built with [Eel](https://github.com/python-eel/Eel) and [valclient](https://github.com/colinhartigan/valclient.py)
+- Inspired by various open-source instalockers
+- Agent art and assets belong to Riot Games
+
+<div align="center">
+  <br>
+  Designed & Maintained by <a href="https://github.com/k4ran909"><b>k4ran909</b></a>
+</div>
