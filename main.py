@@ -9,6 +9,7 @@ import os
 import psutil
 from sys import argv
 import logging
+import socket
 
 """
 CONSTANTS
@@ -320,13 +321,51 @@ def check_chrome_installed():
 """
 INITIALIZING THE EEL APPLICATION
 """
+
+def is_port_in_use(port):
+    """Check if a port is already in use"""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        try:
+            s.bind(('localhost', port))
+            return False
+        except OSError:
+            return True
+
+def show_error_message(title, message):
+    """Show a Windows message box"""
+    try:
+        import ctypes
+        ctypes.windll.user32.MessageBoxW(0, message, title, 0x10)  # 0x10 = MB_ICONERROR
+    except:
+        print(f"{title}: {message}")
+
+# Check if another instance is already running
+if is_port_in_use(8000):
+    logger.error("Port 8000 is already in use. Another instance may be running.")
+    show_error_message(
+        "iVALOCKER Already Running",
+        "Another instance of iVALOCKER is already running!\n\nPlease close the existing window first, or check your taskbar for the running application."
+    )
+    exit(1)
+
 eel.init("web")
 
-# Try launching with chrome, otherwise launch it in their default browser
-
-if check_chrome_installed():
-    logger.debug("Starting eel with chrome")
-    eel.start("index.html", size=(SCREEN_DIMENSIONS), mode="chrome")
-else:
-    logger.debug("Starting eel with default browser")
-    eel.start("index.html", size=(SCREEN_DIMENSIONS), mode="default")
+# Try launching with chrome, otherwise launch in default browser
+try:
+    if check_chrome_installed():
+        logger.debug("Starting eel with chrome")
+        eel.start("index.html", size=(SCREEN_DIMENSIONS), mode="chrome", port=8000)
+    else:
+        logger.debug("Starting eel with default browser")
+        eel.start("index.html", size=(SCREEN_DIMENSIONS), mode="default", port=8000)
+except OSError as e:
+    if "10048" in str(e):
+        show_error_message(
+            "iVALOCKER Already Running",
+            "Another instance of iVALOCKER is already running!\n\nPlease close the existing window first."
+        )
+    else:
+        show_error_message("Startup Error", str(e))
+except Exception as e:
+    logger.error(f"Failed to start: {e}")
+    show_error_message("Startup Error", str(e))
