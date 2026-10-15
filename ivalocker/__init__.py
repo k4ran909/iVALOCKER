@@ -8,5 +8,5 @@ iVALOCKER core package.
     engine    - the instalock state machine that ties everything together
 """
 
-__version__ = "3.0.0"
+__version__ = "3.0"
 APP_NAME = "iVALOCKER"
