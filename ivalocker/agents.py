@@ -60,9 +60,14 @@ def _from_api(entry):
 
 
 def merge(bundled, remote_entries):
-    """Add agents that only exist in the live list. Bundled agents keep their local artwork."""
-    known = {a["uuid"] for a in bundled}
-    merged = list(bundled)
+    """
+    Add agents that only exist in the live list. Bundled agents keep their local artwork, but if
+    the live list has a different UUID for an agent with the same name, the live UUID wins
+    (it's what the game expects when locking).
+    """
+    merged = [dict(a) for a in bundled]
+    by_uuid = {a["uuid"]: a for a in merged}
+    by_name = {a["name"].lower(): a for a in merged}
     for entry in remote_entries:
         try:
             if not entry.get("isPlayableCharacter", True):
@@ -70,9 +75,17 @@ def merge(bundled, remote_entries):
             agent = _from_api(entry)
         except (KeyError, AttributeError, TypeError):
             continue
-        if agent["uuid"] not in known:
-            known.add(agent["uuid"])
+        if agent["uuid"] in by_uuid:
+            continue
+        existing = by_name.get(agent["name"].lower())
+        if existing:
+            logger.info("Updating %s UUID from the live agent list", existing["name"])
+            by_uuid.pop(existing["uuid"], None)
+            existing["uuid"] = agent["uuid"]
+        else:
             merged.append(agent)
+            by_name[agent["name"].lower()] = agent
+        by_uuid[agent["uuid"]] = existing or agent
     return merged
 
 
