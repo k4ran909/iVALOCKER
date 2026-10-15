@@ -21,7 +21,7 @@ AppPublisher={#AppPublisher}
 AppPublisherURL={#AppURL}
 AppSupportURL={#AppURL}/issues
 AppUpdatesURL={#AppURL}/releases
-DefaultDirName={autopf}\{#AppName}
+DefaultDirName={code:DefaultInstallDir}
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 ; One-click install: no questions, no admin prompt. Installs for the current user
@@ -72,6 +72,24 @@ Filename: "{app}\{#AppExeName}"; Flags: nowait skipifsilent
 Type: filesandordirs; Name: "{app}"
 
 [Code]
+// Per-user install goes to %LOCALAPPDATA%\Programs (what {autopf} means for non-admin installs,
+// spelled out because some environments can't resolve that folder); /ALLUSERS -> Program Files.
+function DefaultInstallDir(Param: String): String;
+begin
+  if IsAdminInstallMode then
+    Result := ExpandConstant('{commonpf}\{#AppName}')
+  else
+    Result := ExpandConstant('{localappdata}\Programs\{#AppName}');
+end;
+
+// One click: Inno Setup always shows the "Ready to Install" page when every other page is
+// disabled, so press its Install button for the user as soon as it appears.
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if (CurPageID = wpReady) and (not WizardSilent) then
+    PostMessage(WizardForm.NextButton.Handle, $00F5 {BM_CLICK}, 0, 0);
+end;
+
 // Ask whether to remove saved settings (favorites, backup agent, ...) on uninstall.
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var

@@ -4,8 +4,8 @@ Build iVALOCKER for Windows.
     python install_and_build/build.py              portable single exe -> dist/iVALOCKER_k4ran909.exe
     python install_and_build/build.py --installer  Windows installer   -> dist/iVALOCKER_Setup_<version>.exe
 
-The installer needs Inno Setup 6 (free): https://jrsoftware.org/isdl.php
-(or: winget install JRSoftware.InnoSetup)
+The installer is made with Inno Setup 6. If it isn't installed, a portable copy is downloaded
+automatically, so only Python is needed.
 """
 import argparse
 import os
@@ -19,6 +19,7 @@ PORTABLE_NAME = "iVALOCKER_k4ran909"
 INSTALLED_NAME = "iVALOCKER"
 ISS_FILE = os.path.join(ROOT, "installer", "iVALOCKER.iss")
 BUILD_DIR = os.path.join(ROOT, "build")
+INNO_SETUP_VERSION = "6.4.3"
 
 
 def app_version():
@@ -85,7 +86,7 @@ def run_pyinstaller(name, onefile, version):
 
 
 def find_iscc():
-    candidates = [shutil.which("iscc"), shutil.which("ISCC")]
+    candidates = [os.getenv("ISCC"), shutil.which("iscc"), shutil.which("ISCC")]
     for base in (os.getenv("ProgramFiles(x86)"), os.getenv("ProgramFiles"),
                  os.path.join(os.getenv("LOCALAPPDATA") or "", "Programs")):
         if base:
@@ -93,14 +94,34 @@ def find_iscc():
     return next((c for c in candidates if c and os.path.isfile(c)), None)
 
 
+def download_iscc():
+    """Fetch a portable copy of the Inno Setup compiler (NuGet package Tools.InnoSetup) into build/."""
+    import io
+    import urllib.request
+    import zipfile
+
+    target = os.path.join(BUILD_DIR, "innosetup", INNO_SETUP_VERSION)
+    iscc = os.path.join(target, "tools", "ISCC.exe")
+    if os.path.isfile(iscc):
+        return iscc
+    url = f"https://api.nuget.org/v3-flatcontainer/tools.innosetup/{INNO_SETUP_VERSION}/tools.innosetup.{INNO_SETUP_VERSION}.nupkg"
+    print(f"Inno Setup not installed, downloading a portable copy:\n  {url}")
+    try:
+        with urllib.request.urlopen(url, timeout=120) as response:
+            zipfile.ZipFile(io.BytesIO(response.read())).extractall(target)
+    except Exception as e:  # network / zip errors
+        print(f"Download failed: {e}")
+        return None
+    return iscc if os.path.isfile(iscc) else None
+
+
 def build_installer(version):
     run_pyinstaller(INSTALLED_NAME, onefile=False, version=version)
 
-    iscc = find_iscc()
+    iscc = find_iscc() or download_iscc()
     if not iscc:
-        sys.exit("\nThe app was built in dist/iVALOCKER, but Inno Setup 6 was not found, so no installer was made.\n"
-                 "Install it from https://jrsoftware.org/isdl.php (or: winget install JRSoftware.InnoSetup)\n"
-                 "and run this command again.")
+        sys.exit("\nThe app was built in dist/iVALOCKER, but Inno Setup could not be found or downloaded,\n"
+                 "so no installer was made. Install it from https://jrsoftware.org/isdl.php and run this again.")
 
     print(f"\nBuilding installer with {iscc}\n")
     result = subprocess.run([iscc, f"/DAppVersion={version}", ISS_FILE])

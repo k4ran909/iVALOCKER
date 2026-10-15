@@ -109,7 +109,7 @@ Requires **Python 3.9 or newer** (any version except 3.10.0) on Windows.
    python install_and_build/build.py               # portable exe  -> dist/iVALOCKER_k4ran909.exe   (or build.bat)
    python install_and_build/build.py --installer   # installer     -> dist/iVALOCKER_Setup_<version>.exe   (or build_installer.bat)
    ```
-   The installer needs [Inno Setup 6](https://jrsoftware.org/isdl.php) (`winget install JRSoftware.InnoSetup`).
+   Only Python is needed: if [Inno Setup](https://jrsoftware.org/isinfo.php) isn't installed, the build downloads a portable copy automatically.
 
 5. **Release** (optional): push a tag like `v3.2` and GitHub Actions builds both files on Windows and publishes them as a GitHub Release.
    ```bash
