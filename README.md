@@ -55,7 +55,9 @@
 
 ## 🎮 How to Use
 
-1. **Download** the latest `iVALOCKER_k4ran909.exe` from [Releases](https://github.com/k4ran909/iVALOCKER/releases).
+1. **Download** from [Releases](https://github.com/k4ran909/iVALOCKER/releases/latest):
+   - **`iVALOCKER_Setup_<version>.exe`** (recommended): installs iVALOCKER with Start Menu / desktop shortcuts and a proper uninstaller (Settings > Apps). No admin rights needed. Updating is just running the newer setup.
+   - **`iVALOCKER_k4ran909.exe`**: portable single file, no install. Run it from anywhere.
 2. **Run iVALOCKER** and **open VALORANT** (in any order). The pill at the top turns green with your Riot ID once connected.
 3. **Click your agent.** iVALOCKER is now **ARMED** (turn off *Arm instantly on click* if you prefer to press the ARM button yourself).
 4. **Queue for a match.** As soon as agent select appears, your agent is locked instantly.
@@ -95,9 +97,16 @@ Requires **Python 3.9 or newer** (any version except 3.10.0) on Windows.
    python main.py            # add --debug to write a log to %LOCALAPPDATA%\iVALOCKER
    ```
 
-4. **Build the EXE** (or double-click `build.bat`). The exe is written to `dist/iVALOCKER_k4ran909.exe`.
+4. **Build**
    ```bash
-   python install_and_build/build.py
+   python install_and_build/build.py               # portable exe  -> dist/iVALOCKER_k4ran909.exe   (or build.bat)
+   python install_and_build/build.py --installer   # installer     -> dist/iVALOCKER_Setup_<version>.exe   (or build_installer.bat)
+   ```
+   The installer needs [Inno Setup 6](https://jrsoftware.org/isdl.php) (`winget install JRSoftware.InnoSetup`).
+
+5. **Release** (optional): push a tag like `v3.2` and GitHub Actions builds both files on Windows and publishes them as a GitHub Release.
+   ```bash
+   git tag v3.2 && git push origin v3.2
    ```
 
 Run the tests with `pip install -r requirements-dev.txt` and `python -m pytest`.
@@ -113,7 +122,8 @@ ivalocker/
   agents.py          Agent roster (bundled + live updates from valorant-api.com)
   settings.py        Saved preferences (%LOCALAPPDATA%\iVALOCKER\settings.json)
 web/                 The UI (HTML / CSS / JS, agent artwork)
-install_and_build/   install.py and build.py
+install_and_build/   install.py and build.py (portable exe / installer)
+installer/           Inno Setup script for the Windows installer
 tests/               Unit tests (pytest)
 ```
 </details>
