@@ -1,8 +1,9 @@
-.venv
-venv
-VALORANT Instalocker.spec
-build
-dist
+__pycache__/
 *.pyc
-*.log
+.pytest_cache/
+build/
+dist/
 *.spec
+venv/
+.venv/
+*.log

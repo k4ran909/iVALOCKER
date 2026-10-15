@@ -1,371 +1,240 @@
 """
-IMPORTS
-"""
-import eel
-from screeninfo import get_monitors
-from valclient.client import Client
-import webbrowser
-import os
-import psutil
-from sys import argv
-import logging
-import socket
+iVALOCKER by k4ran909 - the fastest VALORANT agent instalocker.
 
+Run:        python main.py
+Debug log:  python main.py --debug        (writes iVALOCKER.log to %LOCALAPPDATA%\\iVALOCKER)
+No window:  python main.py --no-window    (serves the UI and prints the URL, handy for development)
 """
-CONSTANTS
-"""
+# gevent must patch the standard library before anything imports sockets / ssl, so that network
+# calls made by the lock engine never freeze the UI.
+from gevent import monkey
+monkey.patch_all()
 
-# Find the screen dimensions, reduce size x1.7 times. Scale window to that height.
-SCREEN_DIMENSIONS = (
-    list(get_monitors())[0].width // 1.7,
-    list(get_monitors())[0].height // 1.7,
-)
+import argparse  # noqa: E402
+import logging  # noqa: E402
+import os  # noqa: E402
+import sys  # noqa: E402
+import webbrowser  # noqa: E402
+
+import eel  # noqa: E402
+
+# A --noconsole build has no stdout / stderr; give stray prints somewhere harmless to go.
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w")
+
+from ivalocker import APP_NAME, __version__  # noqa: E402
+from ivalocker.agents import ROLES, Roster  # noqa: E402
+from ivalocker.engine import Engine  # noqa: E402
+from ivalocker.paths import data_dir, resource_path  # noqa: E402
+from ivalocker.settings import Settings  # noqa: E402
 
 # Socials, don't touch! >:(
-INSTAGRAM = "https://www.instagram.com/k4ran909/"
-GITHUB = "https://github.com/k4ran909/"
-
-# MAXIMUM SPEED SETTINGS - Zero delay instalock
-LOOP_DELAY = 0.01  # 10ms - fastest possible without CPU overload
-LOCK_DELAY = 0
-HOVER_DELAY = 0
-
-# Used by the iterating runtime code
-AGENT = None
-SEEN_MATCHES = []
-RUNNING = False
-
-# All the codes right here so we don't need to fetch anything. This is also in web/json/agents.json so make changes in both places.
-# The reason this is here at all is because I failed to fetch from localhost:port/json/agents.json from within this file.
-AGENT_CODES = {
-    "Reyna": "a3bfb853-43b2-7238-a4f1-ad90e9e46bcc",
-    "Clove": "1dbf2edd-4729-0984-3115-daa5eed44993",
-    "Jett": "add6443a-41bd-e414-f6ad-e58d267f4e95",
-    "Omen": "8e253930-4c05-31dd-1b6c-968525494517",
-    "Sage": "569fdd95-4d10-43ab-ca70-79becc718b46",
-    "Sova": "320b2a48-4d9b-a075-30f1-1f93a9b638fa",
-    "Gekko": "e370fa57-4757-3604-3648-499e1f642d3f",
-    "Neon": "bb2a4828-46eb-8cd1-e765-15848195d751",
-    "Raze": "f94c3b30-42be-e959-889c-5aa313dba261",
-    "Tejo": "b444168c-4e35-8076-db47-ef9bf368f384",
-    "Cypher": "117ed9e3-49f3-6512-3ccf-0cada7e3823b",
-    "Chamber": "22697a3d-45bf-8dd7-4fec-84a9e28c69d7",
-    "Killjoy": "1e58de9c-4950-5125-93e9-a0aee9f98746",
-    "Phoenix": "eb93336a-449b-9c1b-0a54-a891f7921d69",
-    "Skye": "6f2a04ca-43e0-be17-7f36-b3908627744d",
-    "Brimstone": "9f0d8ba9-4140-b941-57d3-a7ad57c6b417",
-    "Breach": "5f8d3a7f-467b-97f3-062c-13acf203c006",
-    "Fade": "dade69b4-4f5a-8528-247b-219e5a1facd6",
-    "Yoru": "7f94d92c-4234-0a36-9646-3a87eb8b5c89",
-    "Kayo": "601dbbe7-43ce-be57-2a40-4abd24953621",
-    "Astra": "41fb69c1-4189-7b37-f117-bcaf1e96f1bf",
-    "Viper": "707eab51-4836-f488-046a-cda6bf494859",
-    "Harbor": "95b78ed7-4637-86d9-7e41-71ba8c293152",
-    "Deadlock": "cc8b64c8-4b25-4ff9-6e7f-37b4da43d235",
-    "Iso": "0e38b510-41a8-5780-5e8f-568b2a4f2d6c",
-    "Vyse": "efba5359-4016-a1e5-7626-b1ae76895940",
-    "Waylay": "df1cb487-4902-002e-5c17-d28e83e78588"
+LINKS = {
+    "instagram": "https://www.instagram.com/k4ran909/",
+    "github": "https://github.com/k4ran909/",
+    "releases": "https://github.com/k4ran909/iVALOCKER/releases/latest",
 }
 
-# Enable or disable debugging through an arg.
-DEBUG = any( ['--debug' in arg.lower() for arg in argv] )
-logger = logging.getLogger("VALORANT_INSTALOCKER" + __name__)
-
-# Initialize debugger
-if DEBUG:
-    logger_filename = "valorant_instalocker.log"
-    logging.basicConfig( filename=logger_filename, encoding='utf-8', level=logging.DEBUG )
-    with open(logger_filename, "w"): pass # erase all content
-    logger.debug(f"""\nPreferences:\nloop delay: {LOOP_DELAY}\nlock delay: {LOCK_DELAY}\nhover delay: {HOVER_DELAY}""")
-
-"""
-FUNCTIONS
-"""
-    
-def get_region():
-    """
-    Get the region code of the current game.
-    """
-    region = None
-
-    with open( os.path.join(os.getenv("LOCALAPPDATA"), R"VALORANT\Saved\Logs\ShooterGame.log"), "rb",) as f:
-        lines = f.readlines()
-    
-    logger.debug(f"Lines from ShooterGame.log: {len(lines)}")
-
-    # Region finder Test 1
-    if not region:
-        for line in lines:
-            if b"regions/" in line:
-                logger.debug(f"Testing {line}")
-                region = line.split(b"regions/")[1].split(b"]")[0]
-                region = region.decode()
-                break
-                
-    # Region finder Test 2
-    if not region:
-        for line in lines:
-            if b"config/" in line:
-                logger.debug(f"Testing {line}")
-                region = line.split(b"config/")[1].split(b"]")[0]
-                region = region.decode()
-                break
-    
-    logger.debug(f"Region: {region}")
-    
-    return region
-        
-
-def errorAlert(line1, line2, time):
-    """
-    Change the status text and the chosen agent text into an error.
-    Sleep for some time before changing it back
-    """
-    # Truncate long error messages to fit the UI
-    if isinstance(line2, Exception):
-        line2 = str(line2)
-    if len(str(line2)) > 30:
-        line2 = str(line2)[:27] + "..."
-    logger.error(f"Error alert raised: {line1} {line2}")
-    eel.alertUser(str(line1), str(line2))
-    eel.sleep(time)
-    eel.askUserToChooseAgent()
+logger = logging.getLogger(APP_NAME)
 
 
-@eel.expose 
-def stop_lock():
-    """
-    Change state from running to disabled to stop the locking process
-    """
-    global RUNNING
-    global AGENT
-    RUNNING = False
-    AGENT = None
-    eel.hideStopButton()
-    logger.debug("Stopping agent locking")
+def parse_args():
+    parser = argparse.ArgumentParser(prog=APP_NAME)
+    parser.add_argument("--debug", action="store_true", help="write a detailed log file")
+    parser.add_argument("--no-window", action="store_true", help="don't open a window, just serve the UI")
+    parser.add_argument("--port", type=int, default=0, help="UI port (default: pick a free one)")
+    # PyInstaller / Windows can pass extra arguments; never crash on them.
+    args, _ = parser.parse_known_args()
+    return args
 
 
-@eel.expose
-def try_lock(agent):
-    """
-    START TO ATTEMPT LOCKING AN AGENT
-    """
-    global RUNNING
-    global AGENT
-    global SEEN_MATCHES
-    
-    logger.debug("Attempting to begin locking.")
-
-    # if valorant isnt on, mock the user
-    if not "VALORANT.exe" in (p.name() for p in psutil.process_iter()):
-
-        if RUNNING:
-            stop_lock()
-
-            logger.debug("Valorant wasn't detected in process list so stopped locking.\nProcess list:")
-            logger.debug(str([p.name() for p in psutil.process_iter()]))
-
-        return errorAlert("TURN VALORANT ON", "YOU CLOWN", 3)
-
-    try:  # try and get the region code automatically
-        logger.debug('Trying to find region...')
-        region_code = get_region()
-
-    except:
-
-        if RUNNING:
-            logger.debug("Region wasn't found so stopped locking")
-            stop_lock()
-
-        return errorAlert("COULD NOT FIND REGION", "TRY LOGGING IN AGAIN", 5)
-    
-    if ( RUNNING ): # if we're already attempting to select an agent, simply change what agent we're trying to select
-        logger.debug(f"Agent changed to {agent}")
-        AGENT = AGENT_CODES[agent]
-        return
-
-    logger.debug(f"Starting to lock {agent}")
-
-    try:
-        logger.debug("Initializing a valclient instance...")
-        client = Client(region=region_code)
-        logger.debug("Initialized a valclient instance.")
-    except ValueError as e:
-        logger.error(f"ValueError initializing valclient: {e}")
-        return errorAlert("VALCLIENT INIT FAILED", "Check if Valorant is running", 5)
-    except ConnectionError as e:
-        logger.error(f"ConnectionError: {e}")
-        return errorAlert("CONNECTION ERROR", "Can't reach Valorant API", 5)
-    except Exception as e:
-        logger.error(f"Unexpected error initializing valclient: {e}")
-        return errorAlert("INIT ERROR", e, 5)
-
-    try:
-        logger.debug("Activating valclient instance...")
-        client.activate()
-        logger.debug("Activated valclient instance")
-    except Exception as e:
-        logger.error(f"Error activating valclient: {e}")
-        return errorAlert("ACTIVATION FAILED", "Restart Valorant", 5)
-
-    RUNNING = True
-
-    # Pre-set agent code for speed
-    agent_code = AGENT_CODES[agent]
-
-    while RUNNING:
-        if not RUNNING:
-            return
-
-        try:
-            # FAST: Get presence and check state in one go
-            presence = client.fetch_presence(client.puuid)
-            
-            # Get session state from matchPresenceData (fastest path)
-            session_state = None
-            if presence:
-                mpd = presence.get("matchPresenceData")
-                if mpd:
-                    session_state = mpd.get("sessionLoopState")
-                if not session_state:
-                    session_state = presence.get("sessionLoopState")
-            
-            # Not in pregame? Quick sleep and retry
-            if session_state != "PREGAME":
-                eel.sleep(LOOP_DELAY)
-                continue
-            
-            # IN PREGAME! Get match ID fast
-            pregame_data = client.pregame_fetch_match()
-            matchID = pregame_data.get("ID") if pregame_data else None
-            
-            if not matchID or matchID in SEEN_MATCHES:
-                eel.sleep(LOOP_DELAY)
-                continue
-
-            # PREGAME DETECTED! INSTANT LOCK NOW!
-            SEEN_MATCHES.append(matchID)
-            eel.changeStatus("LOCKING")
-
-            # INSTANT LOCK - No delays, no waiting!
-            try:
-                client.pregame_lock_character(agent_code)
-            except:
-                # Fallback: select then lock
-                client.pregame_select_character(agent_code)
-                client.pregame_lock_character(agent_code)
-
-            stop_lock()
-            eel.changeStatus("LOCKED")
-            return True
-
-        except KeyError as e:
-            # Missing key in API response - likely not in the right game state
-            pass  # Just continue to next check
-            
-        except Exception as e:
-            error_str = str(e).lower()
-            
-            # Ignore pre-game related errors (expected when not in agent select)
-            if "pre-game" in error_str or "pregame" in error_str:
-                pass  # Continue checking
-            elif "connection" in error_str or "timeout" in error_str:
-                pass  # Keep trying
-            elif "unauthorized" in error_str or "auth" in error_str:
-                errorAlert("AUTH ERROR", "Restart Valorant", 5)
-                stop_lock()
-                return
-            else:
-                # Log but don't stop - keep trying
-                logger.error(f"Exception in lock loop: {e}")
-        
-        # Delay at END of loop - first check is instant!
-        eel.sleep(LOOP_DELAY)
+def setup_logging(debug):
+    handlers = [logging.StreamHandler()] if sys.stderr else []
+    if debug:
+        log_file = os.path.join(data_dir(), f"{APP_NAME}.log")
+        handlers.append(logging.FileHandler(log_file, mode="w", encoding="utf-8"))
+    logging.basicConfig(
+        level=logging.DEBUG if debug else logging.INFO,
+        format="%(asctime)s %(levelname)-7s %(name)s: %(message)s",
+        handlers=handlers or [logging.NullHandler()],
+    )
+    # These are very chatty at DEBUG level.
+    for noisy in ("urllib3", "geventwebsocket"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
 
 
-@eel.expose
-def open_instagram():
-    webbrowser.open(INSTAGRAM)
-
-
-@eel.expose
-def open_github():
-    webbrowser.open(GITHUB)
-
-def check_chrome_installed():
-
-    logger.debug("Checking for chrome..")
-
-    def get_drives():
-        
-        logger.debug("Getting all drives")
-        import win32api # type: ignore because pywin32 fulfils this.
-        
-        drives = win32api.GetLogicalDriveStrings()
-        logger.debug(f"Drives: {drives}")
-
-        drives = drives.split('\000')[:-1]
-        logger.debug(f"Formatted drives: {drives}")
-
-        return drives
-
-    for drive in get_drives():
-        CHROME_PATH = drive + r"Program Files\Google\Chrome\Application\chrome.exe"
-        if os.path.exists(CHROME_PATH): 
-            logger.debug(f"Found chrome at {CHROME_PATH}")
-            return True
-    
-    logger.debug("Could not find chrome. Launching with default browser.")
-    return False
-
-"""
-INITIALIZING THE EEL APPLICATION
-"""
-
-def is_port_in_use(port):
-    """Check if a port is already in use"""
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        try:
-            s.bind(('localhost', port))
-            return False
-        except OSError:
-            return True
-
-def show_error_message(title, message):
-    """Show a Windows message box"""
+def show_error(title, message):
+    """Native message box on Windows, stderr elsewhere."""
     try:
         import ctypes
         ctypes.windll.user32.MessageBoxW(0, message, title, 0x10)  # 0x10 = MB_ICONERROR
-    except:
-        print(f"{title}: {message}")
+    except (ImportError, AttributeError, OSError):
+        print(f"{title}: {message}", file=sys.stderr)
 
-# Check if another instance is already running
-if is_port_in_use(8000):
-    logger.error("Port 8000 is already in use. Another instance may be running.")
-    show_error_message(
-        "iVALOCKER Already Running",
-        "Another instance of iVALOCKER is already running!\n\nPlease close the existing window first, or check your taskbar for the running application."
-    )
-    exit(1)
 
-eel.init("web")
+def acquire_single_instance():
+    """
+    Make sure only one copy runs. Uses a named mutex on Windows (no port conflicts with other apps).
+    Returns the handle (keep a reference for the lifetime of the app) or None if already running.
+    """
+    if os.name != "nt":
+        return True
+    import ctypes
+    kernel32 = ctypes.windll.kernel32
+    handle = kernel32.CreateMutexW(None, False, f"Local\\{APP_NAME}_k4ran909_single_instance")
+    if kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+        return None
+    return handle
 
-# Try launching with chrome, otherwise launch in default browser
-try:
-    if check_chrome_installed():
-        logger.debug("Starting eel with chrome")
-        eel.start("index.html", size=(SCREEN_DIMENSIONS), mode="chrome", port=8000)
-    else:
-        logger.debug("Starting eel with default browser")
-        eel.start("index.html", size=(SCREEN_DIMENSIONS), mode="default", port=8000)
-except OSError as e:
-    if "10048" in str(e):
-        show_error_message(
-            "iVALOCKER Already Running",
-            "Another instance of iVALOCKER is already running!\n\nPlease close the existing window first."
-        )
-    else:
-        show_error_message("Startup Error", str(e))
-except Exception as e:
-    logger.error(f"Failed to start: {e}")
-    show_error_message("Startup Error", str(e))
+
+def window_size():
+    """About 70% of the primary monitor, within sensible bounds."""
+    width, height = 1280, 800
+    try:
+        from screeninfo import get_monitors
+        monitors = get_monitors()
+        primary = next((m for m in monitors if m.is_primary), monitors[0])
+        width = int(min(max(primary.width * 0.7, 1100), 1600))
+        height = int(min(max(primary.height * 0.75, 700), 1000))
+    except Exception as e:  # screeninfo raises different errors on different platforms
+        logger.debug("Could not read monitor size: %s", e)
+    return width, height
+
+
+# ---------------------------------------------------------------------------------------------
+# Wiring between the engine and the web UI
+# ---------------------------------------------------------------------------------------------
+
+settings = Settings()
+roster = Roster()
+
+
+def emit(kind, payload):
+    """Push an event to the UI. Silently ignored while no window is connected."""
+    # Without this check Eel queues the calls and replays stale events once a window connects;
+    # the window pulls the current state itself with get_bootstrap().
+    if not getattr(eel, "_websockets", None):
+        return
+    try:
+        eel.on_event(kind, payload)
+    except Exception as e:
+        logger.debug("UI event %s dropped: %s", kind, e)
+
+
+engine = Engine(roster, settings, emit)
+
+
+@eel.expose
+def get_bootstrap():
+    """Everything the UI needs on startup."""
+    return {
+        "version": __version__,
+        "agents": roster.as_list(),
+        "roles": list(ROLES),
+        "settings": settings.as_dict(),
+        "state": engine.snapshot(),
+        "logs": engine.logs(),
+    }
+
+
+@eel.expose
+def select_agent(name):
+    return engine.set_agent(name)
+
+
+@eel.expose
+def arm(name):
+    return engine.arm(name)
+
+
+@eel.expose
+def disarm():
+    return engine.disarm()
+
+
+@eel.expose
+def update_settings(changes):
+    updated = settings.update(changes)
+    return updated
+
+
+@eel.expose
+def reconnect():
+    engine.reconnect()
+
+
+@eel.expose
+def open_link(name):
+    if name in LINKS:
+        webbrowser.open(LINKS[name])
+
+
+def refresh_roster():
+    if roster.refresh_from_api():
+        emit("agents", roster.as_list())
+
+
+# ---------------------------------------------------------------------------------------------
+# Startup
+# ---------------------------------------------------------------------------------------------
+
+def start_ui(args):
+    size = window_size()
+    options = {
+        "size": size,
+        "port": args.port,
+        "cmdline_args": ["--disable-http-cache", f"--window-size={size[0]},{size[1]}"],
+    }
+
+    if args.no_window:
+        options["port"] = args.port or 8765
+        print(f"{APP_NAME} UI: http://localhost:{options['port']}/index.html")
+        # Keep running when the browser tab is closed or reloaded.
+        eel.start("index.html", mode=None, close_callback=lambda page, sockets: None, **options)
+        return
+
+    # Prefer an app window (Chrome, then Edge, which ships with Windows), then any browser.
+    modes = ("chrome", "edge", "default") if os.name == "nt" else ("chrome", "default")
+    for mode in modes:
+        try:
+            logger.debug("Starting UI with mode=%s", mode)
+            eel.start("index.html", mode=mode, **options)
+            return
+        except EnvironmentError as e:
+            # Eel raises this before the server starts when the browser can't be found.
+            if "Can't find" in str(e) and mode != "default":
+                logger.debug("%s not available: %s", mode, e)
+                continue
+            raise
+
+
+def main():
+    args = parse_args()
+    setup_logging(args.debug)
+    logger.info("%s %s starting", APP_NAME, __version__)
+
+    instance = acquire_single_instance()
+    if not instance:
+        show_error(f"{APP_NAME} is already running",
+                   f"Another copy of {APP_NAME} is already open.\n\n"
+                   "Check your taskbar and close it before starting a new one.")
+        sys.exit(1)
+
+    eel.init(resource_path("web"))
+    engine.start()
+    eel.spawn(refresh_roster)
+
+    try:
+        start_ui(args)
+    except (SystemExit, KeyboardInterrupt):
+        pass
+    except Exception as e:
+        logger.exception("Failed to start the UI")
+        show_error("Startup error", f"{APP_NAME} could not start:\n\n{e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

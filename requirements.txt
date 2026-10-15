@@ -1,8 +1,7 @@
 eel>=0.18.1
+bottle>=0.13
+gevent
 psutil>=5.9.5
-pyinstaller
-requests
+requests>=2.28
 screeninfo>=0.8.1
-valclient
-pywin32
-requests
+pyinstaller>=6.0
