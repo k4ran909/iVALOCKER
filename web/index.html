@@ -158,6 +158,12 @@
                 <label class="toggle"><input type="checkbox" data-setting="sound"><span class="switch"></span><span>Play sound on lock</span></label>
             </section>
 
+            <section class="card hotkeys" id="hotkeys-card">
+                <h2 class="card-title">HOTKEYS <span class="card-sub">work while in game</span></h2>
+                <div class="hotkey-list" id="hotkey-list"></div>
+                <p class="hotkey-note hidden" id="hotkey-note">Global hotkeys are only available on Windows.</p>
+            </section>
+
             <section class="card activity">
                 <h2 class="card-title">ACTIVITY</h2>
                 <ol class="log" id="log"></ol>
@@ -185,6 +191,8 @@
                 <dt><kbd>F</kbd></dt><dd>Favorite the selected agent</dd>
                 <dt><kbd>1</kbd> - <kbd>6</kbd></dt><dd>Role filters</dd>
                 <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+                <dt><kbd id="help-hk-arm">F8</kbd></dt><dd>Arm / stop, even while in game</dd>
+                <dt><kbd id="help-hk-next">F9</kbd></dt><dd>Next favorite agent, even while in game</dd>
             </dl>
             <p class="modal-note">Tip: right-click an agent to set it as your backup pick.</p>
         </div>

@@ -152,3 +152,35 @@ def test_labels():
     assert map_name("/Game/Maps/NewMap/NewMap") == "NewMap"
     assert game_label({"loop_state": "MENUS", "party_state": "MATCHMAKING"}) == "In queue"
     assert game_label({"loop_state": "PREGAME"}) == "Agent select"
+
+
+def test_toggle_arm_uses_current_agent(make_engine):
+    eng, client, events = make_engine()
+    eng.toggle_arm()
+    assert eng.armed is False
+    assert any(kind == "toast" for kind, _ in events)  # no agent picked yet
+
+    eng.set_agent("Reyna")  # arm_on_click is on by default -> armed
+    assert eng.armed is True
+    eng.toggle_arm()
+    assert eng.armed is False
+    eng.toggle_arm()
+    assert eng.armed is True and eng.agent == "Reyna"
+
+
+def test_cycle_favorite(make_engine):
+    eng, client, _ = make_engine(favorites=["Jett", "Reyna"], arm_on_click=False)
+    eng.cycle_favorite()
+    assert eng.agent == "Jett" and eng.armed is False
+    eng.cycle_favorite()
+    assert eng.agent == "Reyna"
+    eng.arm("Reyna")
+    eng.cycle_favorite()
+    assert eng.agent == "Jett" and eng.armed is True  # switching while armed keeps it armed
+
+
+def test_toggle_mode(make_engine):
+    eng, _, _ = make_engine()
+    assert eng.toggle_mode() == "hover"
+    assert eng.settings["mode"] == "hover"
+    assert eng.toggle_mode() == "lock"

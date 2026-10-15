@@ -24,10 +24,14 @@ AppUpdatesURL={#AppURL}/releases
 DefaultDirName={autopf}\{#AppName}
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
-; Installs for the current user without admin rights by default; the user can choose "all users".
+; One-click install: no questions, no admin prompt. Installs for the current user
+; (%LOCALAPPDATA%\Programs\iVALOCKER). Admins can run "setup.exe /ALLUSERS" for Program Files.
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
-LicenseFile=..\LICENSE
+PrivilegesRequiredOverridesAllowed=commandline
+DisableWelcomePage=yes
+DisableDirPage=yes
+DisableReadyPage=yes
+DisableFinishedPage=yes
 OutputDir=..\dist
 OutputBaseFilename=iVALOCKER_Setup_{#AppVersion}
 SetupIconFile=..\web\favicon.ico
@@ -48,9 +52,6 @@ CloseApplications=yes
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
-[Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
-
 [Files]
 Source: "..\dist\iVALOCKER\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
@@ -61,10 +62,11 @@ Type: filesandordirs; Name: "{app}\_internal"
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 Name: "{autoprograms}\{#AppName} (debug log)"; Filename: "{app}\{#AppExeName}"; Parameters: "--debug"
-Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExeName}"
 
 [Run]
-Filename: "{app}\{#AppExeName}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: nowait postinstall skipifsilent
+; Start iVALOCKER as soon as it's installed.
+Filename: "{app}\{#AppExeName}"; Flags: nowait skipifsilent
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"

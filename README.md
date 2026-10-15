@@ -39,6 +39,9 @@
 - **🔁 Stay armed**
   Optionally keep iVALOCKER armed so it locks your agent in every match, not just the next one. Switch agents at any time while armed.
 
+- **⌨️ In-game hotkeys**
+  Arm, stop and switch agents with global hotkeys (default F8 / F9) without alt-tabbing out of VALORANT. Fully rebindable.
+
 - **🎛️ Modes & tuning**
   Instalock or *hover only* (select without locking), adjustable lock delay, three detection speeds (Turbo / Fast / Eco).
 
@@ -56,11 +59,13 @@
 ## 🎮 How to Use
 
 1. **Download** from [Releases](https://github.com/k4ran909/iVALOCKER/releases/latest):
-   - **`iVALOCKER_Setup_<version>.exe`** (recommended): installs iVALOCKER with Start Menu / desktop shortcuts and a proper uninstaller (Settings > Apps). No admin rights needed. Updating is just running the newer setup.
+   - **`iVALOCKER_Setup_<version>.exe`** (recommended): **one-click install**. Double-click it and iVALOCKER installs, adds Start Menu + desktop shortcuts and opens. No questions, no admin rights. Uninstall from Settings > Apps; update by running a newer setup.
    - **`iVALOCKER_k4ran909.exe`**: portable single file, no install. Run it from anywhere.
 2. **Run iVALOCKER** and **open VALORANT** (in any order). The pill at the top turns green with your Riot ID once connected.
 3. **Click your agent.** iVALOCKER is now **ARMED** (turn off *Arm instantly on click* if you prefer to press the ARM button yourself).
 4. **Queue for a match.** As soon as agent select appears, your agent is locked instantly.
+
+**In-game hotkeys:** press **F8** to arm / stop and **F9** to switch to your next favorite agent, even while VALORANT is focused (you'll hear a beep). Change them, or add one to switch instalock / hover, in the *Hotkeys* panel: click a key box and press the new key.
 
 > **Note:** Windows SmartScreen might warn you because the app is not signed. Click `More Info` > `Run Anyway`. This is normal for open-source tools.
 
@@ -72,6 +77,8 @@
 | `Space` | Arm / stop |
 | `Esc` | Stop, or clear the search |
 | `F` | Favorite the selected agent |
+| `F8` (global, customizable) | Arm / stop, works while in game |
+| `F9` (global, customizable) | Next favorite agent, works while in game |
 | `1` - `6` | Filter: All, Favorites, Duelist, Initiator, Controller, Sentinel |
 | Right-click an agent | Set / clear it as your backup agent |
 
@@ -120,6 +127,7 @@ ivalocker/
   engine.py          Instalock state machine (connect, watch the game state, lock, backup pick)
   riot.py            Small client for the local Riot Client API + VALORANT's pregame API
   agents.py          Agent roster (bundled + live updates from valorant-api.com)
+  hotkeys.py         Global hotkeys (Windows RegisterHotKey)
   settings.py        Saved preferences (%LOCALAPPDATA%\iVALOCKER\settings.json)
 web/                 The UI (HTML / CSS / JS, agent artwork)
 install_and_build/   install.py and build.py (portable exe / installer)

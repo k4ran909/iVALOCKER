@@ -44,9 +44,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
         const boot = await eel.get_bootstrap()();
         app.settings = boot.settings;
+        app.hotkeys = boot.hotkeys || { supported: false, actions: {} };
         $("#version").textContent = "v" + boot.version;
         setAgents(boot.agents);
         renderSettings();
+        renderHotkeys();
         boot.logs.forEach(addLog);
         applyState(boot.state);
     } catch (err) {
@@ -63,6 +65,8 @@ function on_event(kind, payload) {
         case "locked": onLocked(payload); break;
         case "toast": toast(payload.level, payload.title, payload.text); break;
         case "agents": setAgents(payload); break;
+        case "settings": app.settings = payload; renderSettings(); renderStage(); decorateCards(); break;
+        case "hotkey": onHotkey(payload); break;
     }
 }
 
@@ -389,6 +393,7 @@ async function saveSettings(changes) {
 
 function renderSettings() {
     const s = app.settings;
+    if (app.hotkeys) updateHotkeyLabels();
     $$(".segmented").forEach((group) => {
         $$(`.segmented[data-setting="${group.dataset.setting}"] button`).forEach((b) =>
             b.classList.toggle("active", b.dataset.value === s[group.dataset.setting]));
@@ -518,6 +523,7 @@ async function toggleArm() {
 }
 
 function onKey(e) {
+    if (recordingHotkey) return;
     const typing = ["INPUT", "SELECT", "TEXTAREA"].includes(document.activeElement.tagName)
         && document.activeElement.type !== "checkbox" && document.activeElement.type !== "range";
     if (typing || e.ctrlKey || e.metaKey || e.altKey) {
@@ -569,6 +575,127 @@ function playLockSound(soft) {
             osc.connect(gain).connect(audioCtx.destination);
             osc.start(t);
             osc.stop(t + 0.2);
+        });
+    } catch (err) {
+        console.warn("Sound unavailable", err);
+    }
+}
+
+/* ---------------------------------------------------------------------
+   Global hotkeys
+   --------------------------------------------------------------------- */
+
+let recordingHotkey = null;
+
+function renderHotkeys() {
+    const info = app.hotkeys || { supported: false, actions: {} };
+    $("#hotkey-note").classList.toggle("hidden", info.supported);
+    $("#hotkey-list").innerHTML = Object.entries(info.actions).map(([key, label]) => `
+        <div class="hotkey-row">
+            <span>${label}</span>
+            <button class="hotkey-btn" data-hotkey="${key}" ${info.supported ? "" : "disabled"}
+                    title="Click, then press a key. Backspace clears it."></button>
+        </div>`).join("");
+    $$(".hotkey-btn").forEach((b) => b.addEventListener("click", () => startRecording(b)));
+    updateHotkeyLabels();
+}
+
+function updateHotkeyLabels() {
+    $$(".hotkey-btn").forEach((b) => {
+        if (b === recordingHotkey) return;
+        const value = app.settings[b.dataset.hotkey];
+        b.textContent = value || "Not set";
+        b.classList.toggle("empty", !value);
+    });
+    $("#help-hk-arm").textContent = app.settings.hotkey_arm || "-";
+    $("#help-hk-next").textContent = app.settings.hotkey_next || "-";
+}
+
+function startRecording(button) {
+    stopRecording();
+    recordingHotkey = button;
+    button.classList.add("recording");
+    button.textContent = "Press a key...";
+    document.addEventListener("keydown", captureHotkey, true);
+}
+
+function stopRecording() {
+    document.removeEventListener("keydown", captureHotkey, true);
+    if (recordingHotkey) recordingHotkey.classList.remove("recording");
+    recordingHotkey = null;
+    updateHotkeyLabels();
+}
+
+/* KeyboardEvent.code -> the key names the backend understands */
+function hotkeyKeyName(code) {
+    if (/^F\d{1,2}$/.test(code)) return code;
+    if (/^Key[A-Z]$/.test(code)) return code.slice(3);
+    if (/^Digit\d$/.test(code)) return code.slice(5);
+    if (/^Numpad\d$/.test(code)) return code;
+    const map = {
+        Insert: "Insert", Delete: "Delete", Home: "Home", End: "End", PageUp: "PageUp", PageDown: "PageDown",
+        Pause: "Pause", ScrollLock: "ScrollLock", Space: "Space", ArrowUp: "Up", ArrowDown: "Down",
+        ArrowLeft: "Left", ArrowRight: "Right", Backquote: "`", Minus: "-", Equal: "=", BracketLeft: "[",
+        BracketRight: "]", Semicolon: ";", Quote: "'", Comma: ",", Period: ".", Slash: "/", Backslash: "\\",
+    };
+    return map[code] || null;
+}
+
+async function captureHotkey(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (["Control", "Alt", "Shift", "Meta"].includes(e.key)) return; // wait for the actual key
+
+    const button = recordingHotkey;
+    const setting = button.dataset.hotkey;
+    if (e.key === "Escape") return stopRecording();
+    if (e.key === "Backspace") {
+        stopRecording();
+        return saveSettings({ [setting]: "" });
+    }
+
+    const key = hotkeyKeyName(e.code);
+    const spec = [e.ctrlKey && "Ctrl", e.altKey && "Alt", e.shiftKey && "Shift", e.metaKey && "Win", key]
+        .filter(Boolean).join("+");
+    stopRecording();
+    if (!key) return toast("error", "Key not supported", "Try an F-key, or Ctrl / Alt + a letter.");
+
+    const canonical = await eel.check_hotkey(spec)();
+    if (!canonical) {
+        return toast("error", "Pick another key", `${spec} would block normal typing. Use F1-F24, or add Ctrl / Alt / Shift.`);
+    }
+    const taken = Object.keys(app.hotkeys.actions).find((k) => k !== setting && app.settings[k] === canonical);
+    if (taken) {
+        return toast("error", "Already in use", `${canonical} is already set for "${app.hotkeys.actions[taken]}".`);
+    }
+    await saveSettings({ [setting]: canonical });
+    toast("success", "Hotkey saved", `${canonical}: ${app.hotkeys.actions[setting]}`);
+}
+
+function onHotkey(event) {
+    if (app.settings.sound) {
+        playTone(event.action === "disarm" ? [660, 440] : event.action === "arm" ? [440, 660] : [550]);
+    }
+    const titles = { arm: "Armed", disarm: "Stopped", agent: "Agent", mode: "Mode" };
+    const text = event.action === "mode" ? (event.mode === "hover" ? "Hover only" : "Instalock") : (event.agent || "");
+    toast("", `${titles[event.action] || "Hotkey"}`, text);
+}
+
+function playTone(freqs) {
+    try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        freqs.forEach((freq, i) => {
+            const t = audioCtx.currentTime + i * 0.08;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = "sine";
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.0001, t);
+            gain.gain.exponentialRampToValueAtTime(0.2, t + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start(t);
+            osc.stop(t + 0.14);
         });
     } catch (err) {
         console.warn("Sound unavailable", err);
