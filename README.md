@@ -39,6 +39,9 @@
 - **🔁 Stay armed**
   Optionally keep iVALOCKER armed so it locks your agent in every match, not just the next one. Switch agents at any time while armed.
 
+- **⌨️ In-game hotkeys**
+  Arm, stop and switch agents with global hotkeys (default F8 / F9) without alt-tabbing out of VALORANT. Fully rebindable.
+
 - **🎛️ Modes & tuning**
   Instalock or *hover only* (select without locking), adjustable lock delay, three detection speeds (Turbo / Fast / Eco).
 
@@ -55,10 +58,14 @@
 
 ## 🎮 How to Use
 
-1. **Download** the latest `iVALOCKER_k4ran909.exe` from [Releases](https://github.com/k4ran909/iVALOCKER/releases).
+1. **Download** from [Releases](https://github.com/k4ran909/iVALOCKER/releases/latest):
+   - **`iVALOCKER_Setup_<version>.exe`** (recommended): **one-click install**. Double-click it and iVALOCKER installs, adds Start Menu + desktop shortcuts and opens. No questions, no admin rights. Uninstall from Settings > Apps; update by running a newer setup.
+   - **`iVALOCKER_k4ran909.exe`**: portable single file, no install. Run it from anywhere.
 2. **Run iVALOCKER** and **open VALORANT** (in any order). The pill at the top turns green with your Riot ID once connected.
 3. **Click your agent.** iVALOCKER is now **ARMED** (turn off *Arm instantly on click* if you prefer to press the ARM button yourself).
 4. **Queue for a match.** As soon as agent select appears, your agent is locked instantly.
+
+**In-game hotkeys:** press **F8** to arm / stop and **F9** to switch to your next favorite agent, even while VALORANT is focused (you'll hear a beep). Change them, or add one to switch instalock / hover, in the *Hotkeys* panel: click a key box and press the new key.
 
 > **Note:** Windows SmartScreen might warn you because the app is not signed. Click `More Info` > `Run Anyway`. This is normal for open-source tools.
 
@@ -70,6 +77,8 @@
 | `Space` | Arm / stop |
 | `Esc` | Stop, or clear the search |
 | `F` | Favorite the selected agent |
+| `F8` (global, customizable) | Arm / stop, works while in game |
+| `F9` (global, customizable) | Next favorite agent, works while in game |
 | `1` - `6` | Filter: All, Favorites, Duelist, Initiator, Controller, Sentinel |
 | Right-click an agent | Set / clear it as your backup agent |
 
@@ -77,28 +86,19 @@
 
 ## 🛠️ Building from Source
 
-Requires **Python 3.9 or newer** (any version except 3.10.0) on Windows.
+**Full guide: [BUILDING.md](BUILDING.md)** (requirements, every build option, releasing, troubleshooting).
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/k4ran909/iVALOCKER.git
-   cd iVALOCKER
-   ```
+Short version, on Windows with [Python 3.9+](https://www.python.org/downloads/windows/) installed ("Add python.exe to PATH" ticked):
 
-2. **Install dependencies** (or double-click `install.bat`)
-   ```bash
-   pip install -r requirements.txt
-   ```
+| Step | Double-click | Or run |
+| --- | --- | --- |
+| 1. Install dependencies (once) | `install.bat` | `python install_and_build/install.py` |
+| 2. Run from source | `run.bat` | `python main.py` |
+| 3a. Build the portable exe | `build.bat` | `python install_and_build/build.py` |
+| 3b. Build the one-click installer | `build_installer.bat` | `python install_and_build/build.py --installer` |
 
-3. **Run it**
-   ```bash
-   python main.py            # add --debug to write a log to %LOCALAPPDATA%\iVALOCKER
-   ```
-
-4. **Build the EXE** (or double-click `build.bat`). The exe is written to `dist/iVALOCKER_k4ran909.exe`.
-   ```bash
-   python install_and_build/build.py
-   ```
+The results are written to `dist\`: `iVALOCKER_k4ran909.exe` (portable) and `iVALOCKER_Setup_<version>.exe` (installer).
+The version number lives in `ivalocker/__init__.py`.
 
 Run the tests with `pip install -r requirements-dev.txt` and `python -m pytest`.
 
@@ -106,14 +106,17 @@ Run the tests with `pip install -r requirements-dev.txt` and `python -m pytest`.
 <summary>Project layout</summary>
 
 ```
+BUILDING.md          How to run, build and release (start here)
 main.py              App entry point, connects the engine to the UI (Eel)
 ivalocker/
   engine.py          Instalock state machine (connect, watch the game state, lock, backup pick)
   riot.py            Small client for the local Riot Client API + VALORANT's pregame API
   agents.py          Agent roster (bundled + live updates from valorant-api.com)
+  hotkeys.py         Global hotkeys (Windows RegisterHotKey)
   settings.py        Saved preferences (%LOCALAPPDATA%\iVALOCKER\settings.json)
 web/                 The UI (HTML / CSS / JS, agent artwork)
-install_and_build/   install.py and build.py
+install_and_build/   install.py and build.py (portable exe / installer)
+installer/           Inno Setup script for the Windows installer
 tests/               Unit tests (pytest)
 ```
 </details>

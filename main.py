@@ -27,6 +27,7 @@ if sys.stderr is None:
 from ivalocker import APP_NAME, __version__  # noqa: E402
 from ivalocker.agents import ROLES, Roster  # noqa: E402
 from ivalocker.engine import Engine  # noqa: E402
+from ivalocker.hotkeys import ACTIONS as HOTKEY_ACTIONS, HotkeyManager, normalize as normalize_hotkey  # noqa: E402
 from ivalocker.paths import data_dir, resource_path  # noqa: E402
 from ivalocker.settings import Settings  # noqa: E402
 
@@ -126,6 +127,28 @@ def emit(kind, payload):
 engine = Engine(roster, settings, emit)
 
 
+def on_hotkey(action):
+    """A global hotkey was pressed (usually while the game has focus)."""
+    if action == "hotkey_arm":
+        state = engine.toggle_arm()
+        emit("hotkey", {"action": "arm" if state["armed"] else "disarm", "agent": state["agent"]})
+    elif action == "hotkey_next":
+        state = engine.cycle_favorite()
+        emit("hotkey", {"action": "agent", "agent": state["agent"]})
+    elif action == "hotkey_mode":
+        mode = engine.toggle_mode()
+        emit("settings", settings.as_dict())
+        emit("hotkey", {"action": "mode", "mode": mode})
+
+
+def on_hotkey_errors(keys):
+    emit("toast", {"level": "error", "title": "Hotkey unavailable",
+                   "text": f"{', '.join(keys)} is already used by another app. Pick a different key."})
+
+
+hotkeys = HotkeyManager(on_hotkey, on_hotkey_errors)
+
+
 @eel.expose
 def get_bootstrap():
     """Everything the UI needs on startup."""
@@ -134,6 +157,7 @@ def get_bootstrap():
         "agents": roster.as_list(),
         "roles": list(ROLES),
         "settings": settings.as_dict(),
+        "hotkeys": {"supported": hotkeys.supported, "actions": HOTKEY_ACTIONS},
         "state": engine.snapshot(),
         "logs": engine.logs(),
     }
@@ -156,8 +180,17 @@ def disarm():
 
 @eel.expose
 def update_settings(changes):
+    before = settings.as_dict()
     updated = settings.update(changes)
+    if any(updated[k] != before[k] for k in HOTKEY_ACTIONS):
+        hotkeys.apply(updated)
     return updated
+
+
+@eel.expose
+def check_hotkey(spec):
+    """Canonical form of a hotkey, or '' if it can't be used."""
+    return normalize_hotkey(spec)
 
 
 @eel.expose
@@ -185,7 +218,9 @@ def start_ui(args):
     options = {
         "size": size,
         "port": args.port,
-        "cmdline_args": ["--disable-http-cache", f"--window-size={size[0]},{size[1]}"],
+        # autoplay: lets the lock / hotkey sounds play while the window is in the background
+        "cmdline_args": ["--disable-http-cache", "--autoplay-policy=no-user-gesture-required",
+                         f"--window-size={size[0]},{size[1]}"],
     }
 
     if args.no_window:
@@ -224,6 +259,7 @@ def main():
 
     eel.init(resource_path("web"))
     engine.start()
+    hotkeys.apply(settings.as_dict())
     eel.spawn(refresh_roster)
 
     try:

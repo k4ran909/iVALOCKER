@@ -5,6 +5,7 @@ import json
 import logging
 import os
 
+from .hotkeys import normalize as normalize_hotkey
 from .paths import data_dir
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,10 @@ DEFAULTS = {
     "sound": True,             # play a sound when an agent gets locked
     "favorites": [],
     "last_agent": None,
+    # Global hotkeys (work while the game has focus). "" = disabled.
+    "hotkey_arm": "F8",
+    "hotkey_next": "F9",
+    "hotkey_mode": "",
 }
 
 
@@ -43,6 +48,8 @@ def _coerce(key, value):
             return bool(value)
         if key in ("backup_agent", "last_agent"):
             return str(value) if value else None
+        if key.startswith("hotkey_"):
+            return normalize_hotkey(value) if value else ""
         if key == "favorites":
             return [str(v) for v in value][:64] if isinstance(value, list) else default
     except (TypeError, ValueError):

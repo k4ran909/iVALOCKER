@@ -1175,6 +1175,64 @@ option {
     outline-offset: 2px;
 }
 
+.card-sub {
+    font-family: var(--body);
+    font-size: 11px;
+    letter-spacing: .3px;
+    color: var(--dim);
+    margin-left: 6px;
+}
+
+.hotkey-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hotkey-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+}
+
+.hotkey-btn {
+    min-width: 92px;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line-2);
+    border-bottom-width: 2px;
+    background: var(--bg);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    transition: all .15s;
+}
+
+.hotkey-btn:hover {
+    border-color: var(--muted);
+}
+
+.hotkey-btn.empty {
+    color: var(--dim);
+    font-weight: 400;
+}
+
+.hotkey-btn.recording {
+    border-color: var(--accent);
+    color: var(--accent-2);
+    animation: blink 1s infinite;
+}
+
+.hotkey-note {
+    margin: 10px 0 0;
+    font-size: 11px;
+    color: var(--dim);
+    line-height: 1.4;
+}
+
 .activity {
     flex: 1;
     min-height: 160px;

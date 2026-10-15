@@ -169,6 +169,38 @@ class Engine:
         self._push_state()
         return self.snapshot()
 
+    def toggle_arm(self):
+        """Arm with the current agent, or stop if already armed (used by the hotkey)."""
+        if self.armed:
+            return self.disarm()
+        if not self.agent:
+            return self._fail_fast("Pick an agent first")
+        return self.arm(self.agent)
+
+    def cycle_favorite(self, step=1):
+        """Switch the target to the next favorite agent (used by the hotkey)."""
+        favorites = [n for n in self.settings["favorites"] if self.roster.by_name(n)]
+        if not favorites:
+            return self._fail_fast("Star some agents as favorites first")
+        index = favorites.index(self.agent) if self.agent in favorites else -1
+        name = favorites[(index + step) % len(favorites)]
+        if self.armed:
+            return self.arm(name)
+        self.agent = name
+        self.settings.update({"last_agent": name})
+        if self.phase in ("locked", "hovered", "failed"):
+            self.phase = "idle"
+        self._log_add("info", f"Selected {name}")
+        self._push_state()
+        return self.snapshot()
+
+    def toggle_mode(self):
+        mode = "hover" if self.settings["mode"] == "lock" else "lock"
+        self.settings.update({"mode": mode})
+        self._log_add("info", "Mode: " + ("hover only" if mode == "hover" else "instalock"))
+        self._push_state()
+        return mode
+
     def reconnect(self):
         self.client.connected = False
         self._last_connect = 0
