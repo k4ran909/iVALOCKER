@@ -86,35 +86,19 @@
 
 ## 🛠️ Building from Source
 
-Requires **Python 3.9 or newer** (any version except 3.10.0) on Windows.
+**Full guide: [BUILDING.md](BUILDING.md)** (requirements, every build option, releasing, troubleshooting).
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/k4ran909/iVALOCKER.git
-   cd iVALOCKER
-   ```
+Short version, on Windows with [Python 3.9+](https://www.python.org/downloads/windows/) installed ("Add python.exe to PATH" ticked):
 
-2. **Install dependencies** (or double-click `install.bat`)
-   ```bash
-   pip install -r requirements.txt
-   ```
+| Step | Double-click | Or run |
+| --- | --- | --- |
+| 1. Install dependencies (once) | `install.bat` | `python install_and_build/install.py` |
+| 2. Run from source | `run.bat` | `python main.py` |
+| 3a. Build the portable exe | `build.bat` | `python install_and_build/build.py` |
+| 3b. Build the one-click installer | `build_installer.bat` | `python install_and_build/build.py --installer` |
 
-3. **Run it**
-   ```bash
-   python main.py            # add --debug to write a log to %LOCALAPPDATA%\iVALOCKER
-   ```
-
-4. **Build**
-   ```bash
-   python install_and_build/build.py               # portable exe  -> dist/iVALOCKER_k4ran909.exe   (or build.bat)
-   python install_and_build/build.py --installer   # installer     -> dist/iVALOCKER_Setup_<version>.exe   (or build_installer.bat)
-   ```
-   Only Python is needed: if [Inno Setup](https://jrsoftware.org/isinfo.php) isn't installed, the build downloads a portable copy automatically.
-
-5. **Release** (optional): push a tag like `v3.2` and GitHub Actions builds both files on Windows and publishes them as a GitHub Release.
-   ```bash
-   git tag v3.2 && git push origin v3.2
-   ```
+The results are written to `dist\`: `iVALOCKER_k4ran909.exe` (portable) and `iVALOCKER_Setup_<version>.exe` (installer).
+The version number lives in `ivalocker/__init__.py`.
 
 Run the tests with `pip install -r requirements-dev.txt` and `python -m pytest`.
 
@@ -122,6 +106,7 @@ Run the tests with `pip install -r requirements-dev.txt` and `python -m pytest`.
 <summary>Project layout</summary>
 
 ```
+BUILDING.md          How to run, build and release (start here)
 main.py              App entry point, connects the engine to the UI (Eel)
 ivalocker/
   engine.py          Instalock state machine (connect, watch the game state, lock, backup pick)
