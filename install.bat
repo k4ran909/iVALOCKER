@@ -1,3 +1,2 @@
-cd install_and_build
-python install.py
-cmd /K
+python "%~dp0install_and_build\install.py"
+pause

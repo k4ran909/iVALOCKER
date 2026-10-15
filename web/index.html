@@ -1,103 +1,200 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-
-    <title> iVALOCKER by k4ran909 </title>
-
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>iVALOCKER</title>
+    <link rel="icon" href="./favicon.ico">
     <link rel="stylesheet" href="./css/index.css">
-    <link rel="stylesheet" href="./css/gradient_text.scss">
-    <link rel="stylesheet" href="./css/bootstrap.min.css">
-
-    <script type="text/javascript" src="./js/index.js"></script>
-    <script type="text/javascript" src="./js/bootstrap.min.js"></script>
-
     <script type="text/javascript" src="/eel.js"></script>
-
+    <script type="text/javascript" src="./js/index.js" defer></script>
 </head>
 
 <body>
 
+    <!-- Inline icon sprite -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+        <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></symbol>
+        <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+        <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+        <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+        <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+        <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.4 1.1 2.9.8.1-.6.4-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 4.9.4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2Z"/></symbol>
+        <symbol id="i-instagram" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2"/></symbol>
+        <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+        <!-- role glyphs -->
+        <symbol id="r-Duelist" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></symbol>
+        <symbol id="r-Initiator" viewBox="0 0 24 24"><path d="M12 5C6.5 5 3 12 3 12s3.5 7 9 7 9-7 9-7-3.5-7-9-7Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3"/></symbol>
+        <symbol id="r-Controller" viewBox="0 0 24 24"><path d="M7 19a5 5 0 0 1-.6-10A6.5 6.5 0 0 1 18.8 10 4.5 4.5 0 0 1 18 19Z"/></symbol>
+        <symbol id="r-Sentinel" viewBox="0 0 24 24"><path d="M12 2 4 5.5V11c0 5.2 3.4 9.4 8 11 4.6-1.6 8-5.8 8-11V5.5Z"/></symbol>
+        <symbol id="r-Unknown" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></symbol>
+    </svg>
 
-    <div class="d-flex flex-row">
-
-        <div class="d-flex flex-column">
-
-            <div class="search-container">
-                <input type="text" id="agent-search" class="agent-search" placeholder="Search agents..."
-                    autocomplete="off">
+    <!-- ===== TOP BAR ===== -->
+    <header class="topbar">
+        <div class="brand">
+            <img src="./assets/logo.png" alt="" class="brand-logo">
+            <div class="brand-text">
+                <span class="brand-name">iVALOCKER</span>
+                <span class="brand-sub">by k4ran909</span>
             </div>
-
-            <section id="agents">
-
-                <!-- AGENTS GO HERE -->
-
-            </section>
-
         </div>
 
-        <div class="d-flex flex-column flex-fill">
+        <div class="conn" id="conn" data-status="offline" title="Connection to VALORANT">
+            <span class="conn-dot"></span>
+            <span class="conn-text" id="conn-text">Looking for VALORANT...</span>
+            <span class="conn-meta" id="conn-meta"></span>
+            <button class="icon-btn conn-retry" id="btn-reconnect" title="Reconnect">
+                <svg><use href="#i-refresh"/></svg>
+            </button>
+        </div>
 
-            <div id="main2" class="d-flex flex-column flex-fill justify-content-center">
+        <div class="top-actions">
+            <button class="icon-btn" id="btn-help" title="Keyboard shortcuts (?)"><svg><use href="#i-keyboard"/></svg></button>
+            <button class="icon-btn only-narrow" id="btn-panel" title="Settings"><svg><use href="#i-gear"/></svg></button>
+        </div>
+    </header>
 
-                <section id="main">
+    <main class="layout">
 
-                    <div class="d-flex flex-row text-center">
+        <!-- ===== ROSTER ===== -->
+        <aside class="roster">
+            <div class="roster-tools">
+                <label class="search">
+                    <svg><use href="#i-search"/></svg>
+                    <input type="text" id="search" placeholder="Search agents" autocomplete="off" spellcheck="false">
+                    <kbd>/</kbd>
+                </label>
+                <div class="chips" id="role-filters" role="tablist"></div>
+            </div>
+            <div class="agent-grid" id="agent-grid"></div>
+            <div class="empty-search hidden" id="empty-search">No agent matches "<span></span>"</div>
+        </aside>
 
-                        <h1 id="status" class="gradient-text main-section-text fw-bold"> CHOOSE AN AGENT </h1>
+        <!-- ===== STAGE ===== -->
+        <section class="stage" id="stage" data-phase="idle">
+            <div class="stage-bg"><img id="stage-bg-img" alt=""></div>
+            <div class="stage-scan"></div>
 
-                    </div>
-
-                    <div class="d-flex flex-row">
-
-                        <img id='agent-preview' class="agent_preview mx-auto" src='./assets/images/slurp.gif'>
-
-                    </div>
-                    <div class="d-flex flex-row text-center">
-
-                        <h1 id="chosen-agent" class="gradient-text main-section-text fw-bold"> ... </h1>
-
-                    </div>
-
-                    <div id="stop-button-flex-row" class="collapse">
-
-                        <div class="d-flex flex-row align-items-center text-center">
-
-                            <button class="stop-button mt-5" onclick="stopLocking()"> STOP </button>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
+            <div class="stage-top">
+                <div class="phase-badge" id="phase-badge"><span class="pulse"></span><span id="phase-text">IDLE</span></div>
+                <div class="game-state" id="game-state">Waiting for game</div>
             </div>
 
-            <div class="d-flex flex-column justify-content-end align-items-center">
-
-                <div id="socials" class="d-flex flex-row justify-content-around">
-
-                    <button id="instagram" class="icon" onclick="openInstagram()">
-
-                        <img src="./assets/images/socials/instagram.svg"></img>
-                        <p class="text-light" style="display: inline;"> k4ran909 </p> </img>
-
-                    </button>
-
-                    &nbsp &nbsp
-
-                    <button id="github" class="icon" onclick="openGithub()">
-
-                        <img src="./assets/images/socials/github.svg"></img>
-                        <p class="text-light" style="display: inline;"> k4ran909 </p> </img>
-
-                    </button>
-
+            <div class="stage-center">
+                <div class="portrait" id="portrait">
+                    <div class="portrait-ring"></div>
+                    <div class="portrait-ring r2"></div>
+                    <img id="preview" src="./assets/images/slurp.gif" alt="">
+                    <div class="lock-burst"><svg><use href="#i-check"/></svg></div>
                 </div>
 
+                <div class="agent-title">
+                    <div class="agent-role" id="agent-role"></div>
+                    <h1 class="agent-name" id="agent-name">PICK YOUR AGENT</h1>
+                    <p class="agent-hint" id="agent-hint">Choose an agent on the left. It gets locked the instant agent select starts.</p>
+                </div>
+
+                <div class="actions">
+                    <button class="arm-btn" id="arm-btn" disabled>
+                        <span class="arm-label" id="arm-label">ARM INSTALOCK</span>
+                        <span class="arm-sub" id="arm-sub">Select an agent first</span>
+                    </button>
+                </div>
+
+                <div class="result hidden" id="result">
+                    <div class="result-item"><span class="result-k">LOCK TIME</span><span class="result-v" id="r-ms">-</span></div>
+                    <div class="result-item"><span class="result-k">MAP</span><span class="result-v" id="r-map">-</span></div>
+                    <div class="result-item"><span class="result-k">MODE</span><span class="result-v" id="r-queue">-</span></div>
+                </div>
             </div>
+        </section>
 
+        <!-- ===== SIDE PANEL ===== -->
+        <aside class="panel" id="panel">
+            <button class="icon-btn panel-close only-narrow" id="btn-panel-close" title="Close"><svg><use href="#i-close"/></svg></button>
+
+            <section class="card stats">
+                <div class="stat"><span class="stat-v" id="s-locks">0</span><span class="stat-k">LOCKS</span></div>
+                <div class="stat"><span class="stat-v" id="s-best">-</span><span class="stat-k">BEST</span></div>
+                <div class="stat"><span class="stat-v" id="s-last">-</span><span class="stat-k">LAST</span></div>
+            </section>
+
+            <section class="card settings">
+                <h2 class="card-title">SETTINGS</h2>
+
+                <div class="field">
+                    <span class="field-label">Mode</span>
+                    <div class="segmented" data-setting="mode">
+                        <button data-value="lock">Instalock</button>
+                        <button data-value="hover">Hover only</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <span class="field-label">Detection speed</span>
+                    <div class="segmented" data-setting="poll">
+                        <button data-value="turbo" title="Checks every 10 ms">Turbo</button>
+                        <button data-value="fast" title="Checks every 50 ms">Fast</button>
+                        <button data-value="balanced" title="Checks every 150 ms, lowest CPU">Eco</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <span class="field-label">Lock delay <b id="delay-value">0 ms</b></span>
+                    <input type="range" id="delay" min="0" max="3000" step="50" value="0">
+                </div>
+
+                <div class="field">
+                    <span class="field-label">Backup agent <i class="field-help" title="Locked instead if your main pick is already taken">?</i></span>
+                    <select id="backup"></select>
+                </div>
+
+                <label class="toggle"><input type="checkbox" data-setting="keep_armed"><span class="switch"></span><span>Stay armed for next matches</span></label>
+                <label class="toggle"><input type="checkbox" data-setting="arm_on_click"><span class="switch"></span><span>Arm instantly on click</span></label>
+                <label class="toggle"><input type="checkbox" data-setting="sound"><span class="switch"></span><span>Play sound on lock</span></label>
+            </section>
+
+            <section class="card activity">
+                <h2 class="card-title">ACTIVITY</h2>
+                <ol class="log" id="log"></ol>
+            </section>
+
+            <footer class="socials">
+                <button class="social" data-link="instagram"><svg><use href="#i-instagram"/></svg>k4ran909</button>
+                <button class="social" data-link="github"><svg><use href="#i-github"/></svg>k4ran909</button>
+                <span class="version" id="version"></span>
+            </footer>
+        </aside>
+    </main>
+
+    <!-- ===== OVERLAYS ===== -->
+    <div class="toasts" id="toasts"></div>
+
+    <div class="modal hidden" id="help">
+        <div class="modal-card">
+            <h2 class="card-title">KEYBOARD SHORTCUTS</h2>
+            <dl class="shortcuts">
+                <dt><kbd>/</kbd></dt><dd>Search agents</dd>
+                <dt><kbd>Enter</kbd></dt><dd>Pick the first search result</dd>
+                <dt><kbd>Space</kbd></dt><dd>Arm / stop</dd>
+                <dt><kbd>Esc</kbd></dt><dd>Stop / clear search</dd>
+                <dt><kbd>F</kbd></dt><dd>Favorite the selected agent</dd>
+                <dt><kbd>1</kbd> - <kbd>6</kbd></dt><dd>Role filters</dd>
+                <dt><kbd>?</kbd></dt><dd>Show this help</dd>
+            </dl>
+            <p class="modal-note">Tip: right-click an agent to set it as your backup pick.</p>
         </div>
+    </div>
 
+    <div class="offline-overlay hidden" id="offline-overlay">
+        <div class="modal-card">
+            <h2 class="card-title">CONNECTION LOST</h2>
+            <p>The iVALOCKER backend stopped. Close this window and start iVALOCKER again.</p>
+        </div>
     </div>
 
 </body>

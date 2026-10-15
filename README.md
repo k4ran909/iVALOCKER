@@ -21,37 +21,63 @@
 
 <br>
 
+<p align="center">
+  <img src="docs/screenshot-locked.jpg" alt="iVALOCKER - agent locked in" width="900" />
+</p>
+
 ## ⚡ Features
 
-- **🚀 Zero Delay Locking**  
-  Optimized with a **10ms polling rate** for the fastest possible lock speed. No human can beat this.
+- **🚀 Faster locking**
+  Watches your game state every **10 ms** and locks the moment agent select opens. Connections to Riot's servers are kept warm and only **2 requests** are needed per lock (it used to take 4), so the lock is only limited by your ping. Every lock time is shown in the app.
 
-- **🎯 Instant Selection**  
-  Bypasses the selection animation and goes straight for the lock.
+- **🔌 Plug & play**
+  Start iVALOCKER before or after VALORANT, it doesn't matter. It finds the game automatically, detects your region, reconnects if the game restarts and refreshes your login token on its own.
 
-- **🎨 Beautiful UI**  
-  A sleek, modern interface with smooth animations, agent banners, and search functionality.
+- **🛟 Backup agent**
+  If someone already took your main, iVALOCKER instantly locks your backup pick instead (right-click any agent to set it).
 
-- **🛡️ Safe & Secure**  
-  Interacts only with the local Riot Client API (like a wrapper). Does not read memory or inject code.
+- **🔁 Stay armed**
+  Optionally keep iVALOCKER armed so it locks your agent in every match, not just the next one. Switch agents at any time while armed.
+
+- **🎛️ Modes & tuning**
+  Instalock or *hover only* (select without locking), adjustable lock delay, three detection speeds (Turbo / Fast / Eco).
+
+- **🎨 Brand new UI**
+  Agent grid with role filters, favorites, typo-tolerant search and keyboard shortcuts. Shows your account and region, live game status (in menus / in queue / match found / agent select), lock time, map and mode, plus an activity log. Agents you don't own are marked.
+
+- **🆕 Always up to date**
+  New agents released by Riot show up automatically (via valorant-api.com), even before a new iVALOCKER release.
+
+- **🛡️ Safe & secure**
+  Only talks to the local Riot Client API and VALORANT's own agent select endpoints, the same ones the game uses. It does not read game memory or inject anything.
 
 <br>
 
 ## 🎮 How to Use
 
 1. **Download** the latest `iVALOCKER_k4ran909.exe` from [Releases](https://github.com/k4ran909/iVALOCKER/releases).
-2. **Open VALORANT** and log in to the main menu.
-3. **Run iVALOCKER** (Run as Administrator if needed).
-4. **Select your Agent** from the list. The status will change to `WAITING FOR PRE-GAME`.
-5. **Queue for a Match**. As soon as agent select appears, your agent will be locked instantly!
+2. **Run iVALOCKER** and **open VALORANT** (in any order). The pill at the top turns green with your Riot ID once connected.
+3. **Click your agent.** iVALOCKER is now **ARMED** (turn off *Arm instantly on click* if you prefer to press the ARM button yourself).
+4. **Queue for a match.** As soon as agent select appears, your agent is locked instantly.
 
 > **Note:** Windows SmartScreen might warn you because the app is not signed. Click `More Info` > `Run Anyway`. This is normal for open-source tools.
+
+### ⌨️ Shortcuts
+
+| Key | Action |
+| --- | --- |
+| `/` | Search agents (`Enter` picks the first result) |
+| `Space` | Arm / stop |
+| `Esc` | Stop, or clear the search |
+| `F` | Favorite the selected agent |
+| `1` - `6` | Filter: All, Favorites, Duelist, Initiator, Controller, Sentinel |
+| Right-click an agent | Set / clear it as your backup agent |
 
 <br>
 
 ## 🛠️ Building from Source
 
-If you prefer to build it yourself:
+Requires **Python 3.9 or newer** (any version except 3.10.0) on Windows.
 
 1. **Clone the repo**
    ```bash
@@ -59,15 +85,38 @@ If you prefer to build it yourself:
    cd iVALOCKER
    ```
 
-2. **Install Dependencies** (Python < 3.12 recommended)
+2. **Install dependencies** (or double-click `install.bat`)
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Build EXE**
+3. **Run it**
    ```bash
-   python -m eel main.py web --onefile --noconsole --icon=./web/favicon.ico --name="iVALOCKER_k4ran909" --add-data="web;web"
+   python main.py            # add --debug to write a log to %LOCALAPPDATA%\iVALOCKER
    ```
+
+4. **Build the EXE** (or double-click `build.bat`). The exe is written to `dist/iVALOCKER_k4ran909.exe`.
+   ```bash
+   python install_and_build/build.py
+   ```
+
+Run the tests with `pip install -r requirements-dev.txt` and `python -m pytest`.
+
+<details>
+<summary>Project layout</summary>
+
+```
+main.py              App entry point, connects the engine to the UI (Eel)
+ivalocker/
+  engine.py          Instalock state machine (connect, watch the game state, lock, backup pick)
+  riot.py            Small client for the local Riot Client API + VALORANT's pregame API
+  agents.py          Agent roster (bundled + live updates from valorant-api.com)
+  settings.py        Saved preferences (%LOCALAPPDATA%\iVALOCKER\settings.json)
+web/                 The UI (HTML / CSS / JS, agent artwork)
+install_and_build/   install.py and build.py
+tests/               Unit tests (pytest)
+```
+</details>
 
 <br>
 
@@ -82,7 +131,8 @@ This software is for **educational purposes only**.
 
 ## ❤️ Credits
 
-- Built with [Eel](https://github.com/python-eel/Eel) and [valclient](https://github.com/colinhartigan/valclient.py)
+- Built with [Eel](https://github.com/python-eel/Eel). The Riot API handling was originally based on [valclient](https://github.com/colinhartigan/valclient.py)
+- Live agent data from [valorant-api.com](https://valorant-api.com)
 - Inspired by various open-source instalockers
 - Agent art and assets belong to Riot Games
 

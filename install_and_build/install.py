@@ -1,24 +1,25 @@
+"""
+Install everything needed to run / build iVALOCKER from source.
+
+    python install_and_build/install.py
+"""
 import os
+import subprocess
 import sys
 
-# Get the major and minor numbers of the current python version
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-PYTHON_VER = dict( zip( ("major", "minor", "patch"), tuple( sys.version_info ) [ 0 : 3 ] ) )
+if sys.version_info < (3, 9):
+    sys.exit("iVALOCKER needs Python 3.9 or newer.")
 
-''' # Fixed now.
-if PYTHON_VER['major'] >= 3 and PYTHON_VER['minor'] >= 12:
-    raise Exception("Your python version must not exceed 3.11 due to compatibility issues with bottle.py (https://github.com/bottlepy/bottle/issues/1430)")
-'''
+if sys.version_info[:3] == (3, 10, 0):
+    sys.exit("Python 3.10.0 has a known PyInstaller bug (https://github.com/pyinstaller/pyinstaller/issues/6301). "
+             "Please install any other version, e.g. 3.12.")
 
-if PYTHON_VER['major'] == 3 and PYTHON_VER["minor"] == 10 and PYTHON_VER["patch"] == 0:
-    raise Exception("Your python is 3.10.0 which is known to have issues with pyinstaller (https://github.com/pyinstaller/pyinstaller/issues/6301).")
+print(f"Installing dependencies for Python {sys.version.split()[0]}...")
+result = subprocess.run([sys.executable, "-m", "pip", "install", "--upgrade", "-r", os.path.join(ROOT, "requirements.txt")])
+if result.returncode != 0:
+    sys.exit("Installing dependencies failed, see the errors above.")
 
-# Install the dependencies
-print("Installing dependencies")
-os.system('cd .. && python -m pip install -r requirements.txt')
-
-# Fix bottle.py ( refers to https://github.com/k4ran909/VALORANT-Instalocker/issues/3 )
-print("Fixing bottle.py")
-os.system('python replace_bottle.py')
-
-print("Installed!")
+print("\nInstalled! Run the app with:   python main.py")
+print("Build the exe with:            python install_and_build/build.py")
